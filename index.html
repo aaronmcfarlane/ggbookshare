@@ -86,16 +86,8 @@
                         </span>
                     </div>
 
-                    <!-- User Identity & Controls -->
+                    <!-- App Controls -->
                     <div class="flex items-center space-x-2 sm:space-x-3">
-                        <div class="flex items-center bg-slate-100 dark:bg-slate-700/60 rounded-xl px-2.5 py-1 border border-slate-200 dark:border-slate-600">
-                            <i class="fa-solid fa-face-smile text-brand-600 dark:text-brand-400 mr-2 text-xs"></i>
-                            <span class="text-[11px] font-semibold text-slate-400 mr-1.5 hidden sm:inline">I am:</span>
-                            <select id="user-select-dropdown" class="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer">
-                                <!-- Alphabetically populated -->
-                            </select>
-                        </div>
-
                         <button id="btn-open-members-modal" class="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-xs font-semibold flex items-center border border-slate-200 dark:border-slate-700" title="Manage People">
                             <i class="fa-solid fa-users-gear text-purple-500 sm:mr-1.5"></i>
                             <span class="hidden sm:inline">People</span>
@@ -167,10 +159,7 @@
                             A
                         </div>
                         <div>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">Personal Shelf</span>
-                                <span id="hero-my-badge" class="hidden px-2 py-0.2 text-[9px] font-extrabold uppercase rounded-full bg-teal-500 text-white">This is You</span>
-                            </div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">Personal Shelf</span>
                             <h2 id="member-hero-name" class="text-xl font-bold font-monster text-slate-800 dark:text-slate-100"></h2>
                         </div>
                     </div>
@@ -289,6 +278,43 @@
         </div>
     </div>
 
+    <!-- MODAL 2B: Import Confirmation (Assign Owner & Holder) -->
+    <div id="modal-import-confirm" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
+                <h3 class="text-base font-bold font-monster text-slate-800 dark:text-slate-100">Confirm Book Import</h3>
+                <button class="close-import-confirm text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div class="flex space-x-3 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-200/80 dark:border-slate-700">
+                <img id="import-preview-cover" src="" class="w-12 h-16 object-cover rounded shadow-sm flex-shrink-0">
+                <div class="min-w-0 flex-1">
+                    <h4 id="import-preview-title" class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate"></h4>
+                    <p id="import-preview-author" class="text-[11px] text-slate-400 truncate"></p>
+                </div>
+            </div>
+
+            <form id="import-confirm-form" class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Who owns this book? *</label>
+                    <select id="import-owner-select" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Who currently has this book? *</label>
+                    <select id="import-holder-select" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" class="close-import-confirm px-3 py-1.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs">Cancel</button>
+                    <button type="submit" class="px-4 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold shadow">Add to Club</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL 3: Custom Book Add -->
     <div id="modal-manual-add" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
@@ -309,7 +335,6 @@
                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cover Image URL (Optional)</label>
                     <input type="url" id="manual-cover" placeholder="https://..." class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
                 </div>
-                <!-- OWNER FIELD -->
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Who owns this book? *</label>
                     <select id="manual-owner" required class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
@@ -317,8 +342,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Who currently has this book?</label>
-                    <select id="manual-initial-holder" class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Who currently has this book? *</label>
+                    <select id="manual-initial-holder" required class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
                         <!-- Populated dynamically -->
                     </select>
                 </div>
@@ -398,12 +423,12 @@
         
         let booksData = [];
         let membersData = ['Andrea', 'Cheryl', 'Courtney', 'Jen P', 'Kim B', 'Roxana', 'Sarah P', 'Stephanie']; 
-        let currentUser = localStorage.getItem('gg_active_user') || 'Andrea';
         
         let currentMainMode = 'holdings';
         let selectedMember = 'Andrea';
         let libraryFilter = 'all';
         let currentSelectedBookId = null;
+        let pendingImportBook = null;
 
         async function initFirebase() {
             try {
@@ -533,7 +558,6 @@
             if (membersData.length <= 1) return;
             membersData = membersData.filter(m => m !== name);
             sortMembersAlphabetically();
-            if (currentUser === name) currentUser = membersData[0] || '';
             if (selectedMember === name) selectedMember = membersData[0] || '';
             if (db && auth.currentUser) {
                 try {
@@ -548,26 +572,27 @@
         // --- UI Rendering logic ---
         function renderApp() {
             sortMembersAlphabetically();
-            renderUserDropdown();
+            populateMemberSelects();
             renderStats();
             renderMemberPills();
             renderHeroHeader();
             renderBooks();
         }
 
-        function renderUserDropdown() {
-            const dropdown = document.getElementById('user-select-dropdown');
-            dropdown.innerHTML = membersData.map(m => `<option value="${m}" ${m === currentUser ? 'selected' : ''}>${m}</option>`).join('');
-            
-            // Populate Owners & Holders in forms
-            const ownerSelect = document.getElementById('manual-owner');
-            if (ownerSelect) {
-                ownerSelect.innerHTML = membersData.map(m => `<option value="${m}" ${m === currentUser ? 'selected' : ''}>${m}</option>`).join('');
-            }
-            const initialHolderSelect = document.getElementById('manual-initial-holder');
-            if (initialHolderSelect) {
-                initialHolderSelect.innerHTML = membersData.map(m => `<option value="${m}" ${m === currentUser ? 'selected' : ''}>${m}</option>`).join('');
-            }
+        function populateMemberSelects() {
+            const selects = ['manual-owner', 'manual-initial-holder', 'import-owner-select', 'import-holder-select'];
+            selects.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const currentVal = el.value;
+                    el.innerHTML = membersData.map(m => `<option value="${m}">${m}</option>`).join('');
+                    if (currentVal && membersData.includes(currentVal)) {
+                        el.value = currentVal;
+                    } else if (membersData.includes(selectedMember)) {
+                        el.value = selectedMember;
+                    }
+                }
+            });
         }
 
         function renderStats() {
@@ -598,15 +623,11 @@
             const avatar = document.getElementById('member-hero-avatar');
             const name = document.getElementById('member-hero-name');
             const count = document.getElementById('member-hero-count');
-            const badge = document.getElementById('hero-my-badge');
 
             avatar.innerText = selectedMember ? selectedMember.charAt(0).toUpperCase() : '?';
             name.innerText = `${selectedMember}'s Shelf`;
             const bookCount = booksData.filter(b => b.currentHolder === selectedMember).length;
             count.innerText = `${bookCount} book${bookCount === 1 ? '' : 's'}`;
-
-            if (selectedMember === currentUser) badge.classList.remove('hidden');
-            else badge.classList.add('hidden');
         }
 
         function renderBooks() {
@@ -738,13 +759,6 @@
                 document.documentElement.classList.toggle('dark');
             });
 
-            // Identity Switcher
-            document.getElementById('user-select-dropdown').addEventListener('change', (e) => {
-                currentUser = e.target.value;
-                localStorage.setItem('gg_active_user', currentUser);
-                renderApp();
-            });
-
             // Library Search Input
             document.getElementById('library-search').addEventListener('input', () => {
                 renderBooks();
@@ -761,13 +775,19 @@
             });
 
             document.getElementById('btn-open-manual-add').addEventListener('click', () => {
-                renderUserDropdown();
+                populateMemberSelects();
                 document.getElementById('modal-manual-add').classList.remove('hidden');
             });
 
             document.querySelectorAll('.close-modal').forEach(btn => {
                 btn.addEventListener('click', () => {
                     btn.closest('.fixed').classList.add('hidden');
+                });
+            });
+
+            document.querySelectorAll('.close-import-confirm').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.getElementById('modal-import-confirm').classList.add('hidden');
                 });
             });
 
@@ -830,7 +850,7 @@
                                         <p class="text-[11px] text-slate-400 truncate">${doc.author_name ? doc.author_name[0] : 'Unknown'}</p>
                                     </div>
                                 </div>
-                                <button onclick="importApiBook('${title}', '${author}', '${cover}')" class="px-3 py-1 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs rounded-lg transition shadow-sm">
+                                <button onclick="promptImportBook('${title}', '${author}', '${cover}')" class="px-3 py-1 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs rounded-lg transition shadow-sm">
                                     Import
                                 </button>
                             </div>
@@ -840,6 +860,37 @@
                 } catch (err) {
                     resultsContainer.innerHTML = `<div class="text-center py-8 text-xs text-rose-500">Error connecting to Open Library.</div>`;
                 }
+            });
+
+            // Import Confirmation Form Submit
+            document.getElementById('import-confirm-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (pendingImportBook) {
+                    const owner = document.getElementById('import-owner-select').value;
+                    const currentHolder = document.getElementById('import-holder-select').value;
+
+                    saveBook({
+                        title: pendingImportBook.title,
+                        author: pendingImportBook.author,
+                        coverUrl: pendingImportBook.coverUrl,
+                        owner,
+                        currentHolder
+                    });
+
+                    pendingImportBook = null;
+                    document.getElementById('modal-import-confirm').classList.add('hidden');
+                    document.getElementById('modal-api-search').classList.add('hidden');
+                }
+            });
+
+            // Sync holder select to owner select in import modal
+            document.getElementById('import-owner-select').addEventListener('change', (e) => {
+                document.getElementById('import-holder-select').value = e.target.value;
+            });
+
+            // Sync holder select to owner select in custom book modal
+            document.getElementById('manual-owner').addEventListener('change', (e) => {
+                document.getElementById('manual-initial-holder').value = e.target.value;
             });
 
             // Transfer/Pass Book Submit
@@ -865,16 +916,16 @@
             });
         });
 
-        // Global Helper for Open Library Import
-        window.importApiBook = (title, author, coverUrl) => {
-            saveBook({
-                title,
-                author,
-                coverUrl,
-                owner: currentUser,
-                currentHolder: currentUser
-            });
-            document.getElementById('modal-api-search').classList.add('hidden');
+        // Global Helper for Open Library Import Step
+        window.promptImportBook = (title, author, coverUrl) => {
+            pendingImportBook = { title, author, coverUrl };
+            
+            document.getElementById('import-preview-title').innerText = title;
+            document.getElementById('import-preview-author').innerText = author;
+            document.getElementById('import-preview-cover').src = coverUrl || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=300';
+
+            populateMemberSelects();
+            document.getElementById('modal-import-confirm').classList.remove('hidden');
         };
 
         function renderMembersListModal() {
