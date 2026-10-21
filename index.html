@@ -395,16 +395,15 @@
 
         async function initFirebase() {
             try {
-                const firebaseConfig = typeof __firebase_config !== 'undefined' 
-                    ? JSON.parse(__firebase_config)
-                    : {
-                        apiKey: "AIzaSyDemoKeyFallback1234567890",
-                        authDomain: "gg-books-demo.firebaseapp.com",
-                        projectId: "gg-books-demo",
-                        storageBucket: "gg-books-demo.appspot.com",
-                        messagingSenderId: "1234567890",
-                        appId: "1:1234567890:web:demo"
-                    };
+                const firebaseConfig = {
+  apiKey: "AIzaSyASu0_zFykfL_r_7km2eTs9zAZo-mziqVA",
+  authDomain: "gg-book-share-club.firebaseapp.com",
+  projectId: "gg-book-share-club",
+  storageBucket: "gg-book-share-club.firebasestorage.app",
+  messagingSenderId: "15986078629",
+  appId: "1:15986078629:web:55e119d3476eae75ed6e4c",
+  measurementId: "G-7ZVN077WG4"
+};
 
                 const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
