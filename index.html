@@ -204,7 +204,7 @@
 
                         <div class="relative">
                             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                            <input type="text" id="library-search" placeholder="Search title/author..." class="w-full sm:w-48 pl-8 pr-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none text-xs">
+                            <input type="text" id="library-search" placeholder="Search title/author/owner..." class="w-full sm:w-48 pl-8 pr-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none text-xs">
                         </div>
                     </div>
                 </div>
@@ -309,6 +309,13 @@
                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cover Image URL (Optional)</label>
                     <input type="url" id="manual-cover" placeholder="https://..." class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
                 </div>
+                <!-- OWNER FIELD -->
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Who owns this book? *</label>
+                    <select id="manual-owner" required class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Who currently has this book?</label>
                     <select id="manual-initial-holder" class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
@@ -343,9 +350,15 @@
                         <h2 id="detail-title" class="text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight"></h2>
                         <p id="detail-author" class="text-xs font-medium text-slate-500 dark:text-slate-400"></p>
                         
-                        <div class="pt-2">
-                            <span class="text-[10px] uppercase font-bold text-slate-400">Currently held by:</span>
-                            <div id="detail-current-holder" class="text-sm font-bold text-brand-600 dark:text-brand-400"></div>
+                        <div class="pt-1 flex flex-col gap-1">
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-slate-400">Book Owner:</span>
+                                <div id="detail-owner" class="text-xs font-bold text-slate-700 dark:text-slate-200"></div>
+                            </div>
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-slate-400">Currently held by:</span>
+                                <div id="detail-current-holder" class="text-sm font-bold text-brand-600 dark:text-brand-400"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -384,26 +397,25 @@
         let auth = null;
         
         let booksData = [];
-        // Requirement 1: Alphabetically sorted default members list
         let membersData = ['Andrea', 'Cheryl', 'Courtney', 'Jen P', 'Kim B', 'Roxana', 'Sarah P', 'Stephanie']; 
         let currentUser = localStorage.getItem('gg_active_user') || 'Andrea';
         
-        let currentMainMode = 'holdings'; // 'holdings' | 'library'
+        let currentMainMode = 'holdings';
         let selectedMember = 'Andrea';
-        let libraryFilter = 'all'; // 'all' | 'available' | 'loaned'
+        let libraryFilter = 'all';
         let currentSelectedBookId = null;
 
         async function initFirebase() {
             try {
                 const firebaseConfig = {
-  apiKey: "AIzaSyASu0_zFykfL_r_7km2eTs9zAZo-mziqVA",
-  authDomain: "gg-book-share-club.firebaseapp.com",
-  projectId: "gg-book-share-club",
-  storageBucket: "gg-book-share-club.firebasestorage.app",
-  messagingSenderId: "15986078629",
-  appId: "1:15986078629:web:55e119d3476eae75ed6e4c",
-  measurementId: "G-7ZVN077WG4"
-};
+                    apiKey: "AIzaSyASu0_zFykfL_r_7km2eTs9zAZo-mziqVA",
+                    authDomain: "gg-book-share-club.firebaseapp.com",
+                    projectId: "gg-book-share-club",
+                    storageBucket: "gg-book-share-club.firebasestorage.app",
+                    messagingSenderId: "15986078629",
+                    appId: "1:15986078629:web:55e119d3476eae75ed6e4c",
+                    measurementId: "G-7ZVN077WG4"
+                };
 
                 const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
@@ -485,15 +497,16 @@
             if (!bookObj.id) bookObj.id = 'book-' + Date.now();
             const idx = booksData.findIndex(b => b.id === bookObj.id);
             if (idx >= 0) booksData[idx] = bookObj;
-            else booksData.unshift(bookObj);
+            else booksData.push(bookObj);
             saveLocalFallback();
             renderApp();
         }
 
-        async function deleteBook(bookId) {
+        async function removeBook(bookId) {
             if (db && auth.currentUser) {
                 try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'books', bookId));
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'books', bookId);
+                    await deleteDoc(docRef);
                     return;
                 } catch (e) { console.error(e); }
             }
@@ -502,411 +515,386 @@
             renderApp();
         }
 
-        async function saveMembersList() {
+        async function addMember(name) {
+            if (membersData.includes(name)) return;
+            membersData.push(name);
             sortMembersAlphabetically();
             if (db && auth.currentUser) {
                 try {
-                    for (const m of membersData) {
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', m), { name: m });
-                    }
-                } catch(e) { console.error(e); }
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'members', name);
+                    await setDoc(docRef, { name });
+                } catch (e) { console.error(e); }
             }
-            saveLocalFallback();
-        }
-
-        async function removeMemberFromDb(memberName) {
-            if (db && auth.currentUser) {
-                try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', memberName));
-                } catch(e) { console.error(e); }
-            }
-            membersData = membersData.filter(m => m !== memberName);
-            sortMembersAlphabetically();
             saveLocalFallback();
             renderApp();
         }
 
-        // Global Mode Switcher
-        window.switchMainMode = function(mode) {
-            currentMainMode = mode;
+        async function deleteMember(name) {
+            if (membersData.length <= 1) return;
+            membersData = membersData.filter(m => m !== name);
+            sortMembersAlphabetically();
+            if (currentUser === name) currentUser = membersData[0] || '';
+            if (selectedMember === name) selectedMember = membersData[0] || '';
+            if (db && auth.currentUser) {
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'members', name);
+                    await deleteDoc(docRef);
+                } catch (e) { console.error(e); }
+            }
+            saveLocalFallback();
             renderApp();
-        };
+        }
 
-        window.setLibraryFilter = function(filter) {
-            libraryFilter = filter;
-            renderApp();
-        };
-
+        // --- UI Rendering logic ---
         function renderApp() {
             sortMembersAlphabetically();
-            
-            if (!membersData.includes(currentUser) && membersData.length > 0) {
-                currentUser = membersData[0];
-            }
-            if (!membersData.includes(selectedMember) && membersData.length > 0) {
-                selectedMember = membersData[0];
-            }
-
-            renderStats();
             renderUserDropdown();
-            renderModeControls();
-            renderHoldingsMemberPills();
-            renderMemberListModal();
+            renderStats();
+            renderMemberPills();
+            renderHeroHeader();
             renderBooks();
-        }
-
-        function renderStats() {
-            document.getElementById('stat-total').textContent = booksData.length;
-            const holdingCount = booksData.filter(b => !!b.currentHolder).length;
-            document.getElementById('stat-loaned').textContent = holdingCount;
-            document.getElementById('stat-members').textContent = membersData.length;
         }
 
         function renderUserDropdown() {
             const dropdown = document.getElementById('user-select-dropdown');
-            dropdown.innerHTML = '';
-
-            membersData.forEach(member => {
-                const opt = document.createElement('option');
-                opt.value = member;
-                opt.textContent = member;
-                if (member === currentUser) opt.selected = true;
-                dropdown.appendChild(opt);
-            });
-        }
-
-        function renderModeControls() {
-            const btnHoldings = document.getElementById('mode-btn-holdings');
-            const btnLibrary = document.getElementById('mode-btn-library');
-            const secHoldings = document.getElementById('section-holdings');
-            const secLibrary = document.getElementById('section-library');
-
-            if (currentMainMode === 'holdings') {
-                btnHoldings.className = "px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-300 shadow-sm";
-                btnLibrary.className = "px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200";
-                secHoldings.classList.remove('hidden');
-                secLibrary.classList.add('hidden');
-            } else {
-                btnLibrary.className = "px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-300 shadow-sm";
-                btnHoldings.className = "px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200";
-                secLibrary.classList.remove('hidden');
-                secHoldings.classList.add('hidden');
-            }
-
-            // Update Library Filter Tabs UI
-            ['all', 'available', 'loaned'].forEach(f => {
-                const btn = document.getElementById(`filter-${f}`);
-                if (btn) {
-                    if (libraryFilter === f) {
-                        btn.className = "px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-300 shadow-sm";
-                    } else {
-                        btn.className = "px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200";
-                    }
-                }
-            });
-        }
-
-        function renderHoldingsMemberPills() {
-            const bar = document.getElementById('member-pills-bar');
-            bar.innerHTML = '';
-
-            membersData.forEach(member => {
-                const count = booksData.filter(b => b.currentHolder === member).length;
-                const isSelected = selectedMember === member;
-                const isMe = currentUser === member;
-
-                const btn = document.createElement('button');
-                btn.className = `px-3 py-1.5 text-xs font-semibold rounded-xl whitespace-nowrap transition flex items-center space-x-1.5 ${
-                    isSelected 
-                        ? 'bg-brand-600 text-white shadow-sm font-bold' 
-                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
-                }`;
-
-                btn.innerHTML = `
-                    <span>${member}</span>
-                    ${isMe ? '<i class="fa-solid fa-user text-[10px] opacity-75"></i>' : ''}
-                    <span class="px-1.5 py-0.2 text-[10px] rounded-full ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}">${count}</span>
-                `;
-                btn.onclick = () => {
-                    selectedMember = member;
-                    renderApp();
-                };
-                bar.appendChild(btn);
-            });
-
-            // Update Hero Banner
-            document.getElementById('member-hero-name').textContent = selectedMember;
-            document.getElementById('member-hero-avatar').textContent = selectedMember.charAt(0).toUpperCase();
+            dropdown.innerHTML = membersData.map(m => `<option value="${m}" ${m === currentUser ? 'selected' : ''}>${m}</option>`).join('');
             
-            const count = booksData.filter(b => b.currentHolder === selectedMember).length;
-            document.getElementById('member-hero-count').textContent = `${count} ${count === 1 ? 'book' : 'books'}`;
+            // Populate Owners & Holders in forms
+            const ownerSelect = document.getElementById('manual-owner');
+            if (ownerSelect) {
+                ownerSelect.innerHTML = membersData.map(m => `<option value="${m}" ${m === currentUser ? 'selected' : ''}>${m}</option>`).join('');
+            }
+            const initialHolderSelect = document.getElementById('manual-initial-holder');
+            if (initialHolderSelect) {
+                initialHolderSelect.innerHTML = membersData.map(m => `<option value="${m}" ${m === currentUser ? 'selected' : ''}>${m}</option>`).join('');
+            }
+        }
 
-            const badgeMe = document.getElementById('hero-my-badge');
-            if (selectedMember === currentUser) badgeMe.classList.remove('hidden');
-            else badgeMe.classList.add('hidden');
+        function renderStats() {
+            document.getElementById('stat-total').innerText = booksData.length;
+            document.getElementById('stat-loaned').innerText = booksData.filter(b => b.currentHolder !== b.owner).length;
+            document.getElementById('stat-members').innerText = membersData.length;
+        }
+
+        function renderMemberPills() {
+            const container = document.getElementById('member-pills-bar');
+            container.innerHTML = membersData.map(m => {
+                const isSelected = m === selectedMember;
+                const count = booksData.filter(b => b.currentHolder === m).length;
+                return `
+                    <button onclick="selectMember('${m}')" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center space-x-1.5 ${
+                        isSelected 
+                        ? 'bg-brand-600 text-white shadow-sm' 
+                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50'
+                    }">
+                        <span>${m}</span>
+                        <span class="px-1.5 py-0.2 text-[10px] rounded-full ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}">${count}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function renderHeroHeader() {
+            const avatar = document.getElementById('member-hero-avatar');
+            const name = document.getElementById('member-hero-name');
+            const count = document.getElementById('member-hero-count');
+            const badge = document.getElementById('hero-my-badge');
+
+            avatar.innerText = selectedMember ? selectedMember.charAt(0).toUpperCase() : '?';
+            name.innerText = `${selectedMember}'s Shelf`;
+            const bookCount = booksData.filter(b => b.currentHolder === selectedMember).length;
+            count.innerText = `${bookCount} book${bookCount === 1 ? '' : 's'}`;
+
+            if (selectedMember === currentUser) badge.classList.remove('hidden');
+            else badge.classList.add('hidden');
         }
 
         function renderBooks() {
             const container = document.getElementById('books-container');
             const emptyState = document.getElementById('empty-state');
-            container.innerHTML = '';
+            const searchQuery = (document.getElementById('library-search')?.value || '').toLowerCase();
 
-            let filtered = [];
+            let visibleBooks = [];
 
             if (currentMainMode === 'holdings') {
-                filtered = booksData.filter(b => b.currentHolder === selectedMember);
+                visibleBooks = booksData.filter(b => b.currentHolder === selectedMember);
             } else {
-                const query = document.getElementById('library-search').value.toLowerCase().trim();
-                filtered = booksData.filter(b => {
-                    const matchesQuery = !query || b.title?.toLowerCase().includes(query) || b.author?.toLowerCase().includes(query);
-                    if (!matchesQuery) return false;
-
-                    if (libraryFilter === 'available') return !b.currentHolder;
-                    if (libraryFilter === 'loaned') return !!b.currentHolder;
+                visibleBooks = booksData.filter(b => {
+                    const matchesSearch = b.title.toLowerCase().includes(searchQuery) ||
+                                          b.author.toLowerCase().includes(searchQuery) ||
+                                          (b.owner && b.owner.toLowerCase().includes(searchQuery)) ||
+                                          (b.currentHolder && b.currentHolder.toLowerCase().includes(searchQuery));
+                    if (!matchesSearch) return false;
+                    if (libraryFilter === 'available') return b.currentHolder === b.owner;
+                    if (libraryFilter === 'loaned') return b.currentHolder !== b.owner;
                     return true;
                 });
             }
 
-            if (filtered.length === 0) {
+            if (visibleBooks.length === 0) {
+                container.innerHTML = '';
                 emptyState.classList.remove('hidden');
-                container.classList.add('hidden');
-                
-                if (currentMainMode === 'holdings') {
-                    document.getElementById('empty-state-title').textContent = `${selectedMember} currently has no books`;
-                    document.getElementById('empty-state-desc').textContent = `Pass a book to ${selectedMember} or import a new book.`;
-                } else {
-                    document.getElementById('empty-state-title').textContent = 'No library books match filter';
-                    document.getElementById('empty-state-desc').textContent = 'Try another search query or clear filters.';
-                }
                 return;
             }
 
             emptyState.classList.add('hidden');
-            container.classList.remove('hidden');
+            container.innerHTML = visibleBooks.map(b => {
+                const cover = b.coverUrl || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=300';
+                const owner = b.owner || 'Club';
+                const isOwner = b.currentHolder === owner;
 
-            filtered.forEach(book => {
-                const cover = book.coverUrl || 'https://placehold.co/300x450/e2e8f0/64748b?text=No+Cover';
-                const card = document.createElement('div');
-                card.className = "bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition duration-200 flex flex-col overflow-hidden cursor-pointer group";
-                card.onclick = () => openBookDetailsModal(book.id);
-
-                const holderBadge = book.currentHolder 
-                    ? `<span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-purple-900/80 text-white backdrop-blur-md truncate block text-center">With: ${book.currentHolder}</span>`
-                    : `<span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-teal-600/90 text-white backdrop-blur-md truncate block text-center">Available</span>`;
-
-                card.innerHTML = `
-                    <div class="relative h-48 bg-slate-100 dark:bg-slate-900 overflow-hidden flex items-center justify-center">
-                        <img src="${cover}" alt="${book.title}" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://placehold.co/300x450/e2e8f0/64748b?text=No+Cover'">
-                        <div class="absolute bottom-2 left-2 right-2">
-                            ${holderBadge}
-                        </div>
-                    </div>
-                    <div class="p-3.5 flex-1 flex flex-col justify-between space-y-2">
-                        <div>
-                            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm line-clamp-1 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition">${book.title}</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">${book.author}</p>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function renderMemberListModal() {
-            const container = document.getElementById('members-list-container');
-            container.innerHTML = '';
-
-            membersData.forEach(member => {
-                const row = document.createElement('div');
-                row.className = "flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700/60 text-xs";
-                row.innerHTML = `
-                    <span class="font-medium text-slate-700 dark:text-slate-200">${member}</span>
-                    <button class="remove-member-btn text-rose-500 hover:text-rose-700 p-1" title="Remove Member">
-                        <i class="fa-solid fa-trash text-xs"></i>
-                    </button>
-                `;
-
-                row.querySelector('.remove-member-btn').onclick = () => {
-                    if (membersData.length <= 1) {
-                        alert("You must keep at least one member.");
-                        return;
-                    }
-                    removeMemberFromDb(member);
-                };
-
-                container.appendChild(row);
-            });
-
-            const manualHolderSelect = document.getElementById('manual-initial-holder');
-            manualHolderSelect.innerHTML = '';
-            membersData.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m;
-                opt.textContent = m;
-                if (m === currentUser) opt.selected = true;
-                manualHolderSelect.appendChild(opt);
-            });
-        }
-
-        function openBookDetailsModal(bookId) {
-            currentSelectedBookId = bookId;
-            const book = booksData.find(b => b.id === bookId);
-            if (!book) return;
-
-            document.getElementById('detail-title').textContent = book.title;
-            document.getElementById('detail-author').textContent = `By ${book.author}`;
-            document.getElementById('detail-current-holder').textContent = book.currentHolder || 'Unassigned';
-            document.getElementById('detail-cover').src = book.coverUrl || 'https://placehold.co/300x450/e2e8f0/64748b?text=No+Cover';
-
-            const recipientSelect = document.getElementById('transfer-recipient-select');
-            recipientSelect.innerHTML = '';
-            membersData.forEach(member => {
-                const opt = document.createElement('option');
-                opt.value = member;
-                opt.textContent = member;
-                if (member !== book.currentHolder) opt.selected = true;
-                recipientSelect.appendChild(opt);
-            });
-
-            document.getElementById('modal-book-details').classList.remove('hidden');
-        }
-
-        // Event Listeners
-        document.getElementById('user-select-dropdown').addEventListener('change', (e) => {
-            currentUser = e.target.value;
-            localStorage.setItem('gg_active_user', currentUser);
-            renderApp();
-        });
-
-        document.getElementById('add-member-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const newName = document.getElementById('new-member-name').value.trim();
-            if (newName && !membersData.includes(newName)) {
-                membersData.push(newName);
-                saveMembersList();
-                document.getElementById('new-member-name').value = '';
-                renderApp();
-            }
-        });
-
-        document.getElementById('transfer-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!currentSelectedBookId) return;
-
-            const targetRecipient = document.getElementById('transfer-recipient-select').value;
-            const book = booksData.find(b => b.id === currentSelectedBookId);
-            if (book) {
-                book.currentHolder = targetRecipient;
-                await saveBook(book);
-                document.getElementById('modal-book-details').classList.add('hidden');
-            }
-        });
-
-        // Open Library API Search
-        document.getElementById('open-library-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const query = document.getElementById('api-search-input').value.trim();
-            if (!query) return;
-
-            const resultsContainer = document.getElementById('api-results-container');
-            resultsContainer.innerHTML = `
-                <div class="text-center py-8 text-slate-400">
-                    <i class="fa-solid fa-spinner fa-spin text-2xl text-brand-600 mb-2"></i>
-                    <p class="text-xs">Searching Open Library...</p>
-                </div>
-            `;
-
-            try {
-                const res = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=8`);
-                const data = await res.json();
-
-                if (!data.docs || data.docs.length === 0) {
-                    resultsContainer.innerHTML = `<p class="text-center text-xs text-slate-400 py-6">No books found matching "${query}".</p>`;
-                    return;
-                }
-
-                resultsContainer.innerHTML = '';
-                data.docs.forEach(doc => {
-                    const title = doc.title || 'Untitled';
-                    const author = doc.author_name ? doc.author_name.join(', ') : 'Unknown Author';
-                    const coverId = doc.cover_i;
-                    const coverUrl = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg` : 'https://placehold.co/150x220/e2e8f0/64748b?text=No+Cover';
-
-                    const item = document.createElement('div');
-                    item.className = "flex items-center justify-between p-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition gap-3";
-                    item.innerHTML = `
-                        <div class="flex items-center space-x-3 min-w-0">
-                            <img src="${coverUrl}" alt="${title}" class="w-10 h-14 object-cover rounded shadow-sm border border-slate-200 dark:border-slate-700 flex-shrink-0">
-                            <div class="min-w-0">
-                                <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">${title}</h4>
-                                <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">${author}</p>
+                return `
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 p-3.5 flex flex-col justify-between space-y-3 shadow-sm hover:shadow-md transition group">
+                        <div class="flex space-x-3">
+                            <img src="${cover}" alt="${b.title}" class="w-16 h-24 object-cover rounded-xl border border-slate-100 dark:border-slate-700 flex-shrink-0">
+                            <div class="flex-1 min-w-0 flex flex-col justify-between">
+                                <div>
+                                    <h4 class="font-bold text-xs text-slate-800 dark:text-slate-100 line-clamp-2 leading-snug group-hover:text-brand-600 transition-colors">${b.title}</h4>
+                                    <p class="text-[11px] text-slate-400 font-medium truncate mt-0.5">${b.author}</p>
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                                        <i class="fa-solid fa-user-tag text-slate-400 mr-1"></i>Owner: <strong class="text-slate-700 dark:text-slate-200">${owner}</strong>
+                                    </div>
+                                    <div class="text-[10px] font-semibold ${isOwner ? 'text-teal-600 dark:text-teal-400' : 'text-purple-600 dark:text-purple-400'}">
+                                        <i class="fa-solid ${isOwner ? 'fa-house-lock' : 'fa-hand-holding-hand'} mr-1"></i>${isOwner ? 'With Owner' : 'With ' + b.currentHolder}
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <button class="import-book-btn px-3 py-1 bg-brand-600 text-white text-xs font-semibold rounded-lg shadow-sm flex-shrink-0">Add</button>
-                    `;
+                        <button onclick="openBookDetails('${b.id}')" class="w-full py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-700/50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold transition border border-slate-200/80 dark:border-slate-600">
+                            Options / Pass
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
 
-                    item.querySelector('.import-book-btn').onclick = async () => {
-                        const newBook = {
-                            title,
-                            author,
-                            coverUrl,
-                            currentHolder: currentUser
-                        };
-                        await saveBook(newBook);
-                        document.getElementById('modal-api-search').classList.add('hidden');
-                    };
+        // Global Window Scope Attachments
+        window.switchMainMode = (mode) => {
+            currentMainMode = mode;
+            const btnHoldings = document.getElementById('mode-btn-holdings');
+            const btnLibrary = document.getElementById('mode-btn-library');
+            const secHoldings = document.getElementById('section-holdings');
+            const secLibrary = document.getElementById('section-library');
 
-                    resultsContainer.appendChild(item);
+            if (mode === 'holdings') {
+                secHoldings.classList.remove('hidden');
+                secLibrary.classList.add('hidden');
+                btnHoldings.className = "px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-300 shadow-sm";
+                btnLibrary.className = "px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200";
+            } else {
+                secHoldings.classList.add('hidden');
+                secLibrary.classList.remove('hidden');
+                btnLibrary.className = "px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-300 shadow-sm";
+                btnHoldings.className = "px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200";
+            }
+            renderApp();
+        };
+
+        window.selectMember = (m) => {
+            selectedMember = m;
+            renderApp();
+        };
+
+        window.setLibraryFilter = (f) => {
+            libraryFilter = f;
+            ['all', 'available', 'loaned'].forEach(type => {
+                const btn = document.getElementById(`filter-${type}`);
+                if (type === f) {
+                    btn.className = "px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-300 shadow-sm";
+                } else {
+                    btn.className = "px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200";
+                }
+            });
+            renderBooks();
+        };
+
+        window.openBookDetails = (id) => {
+            currentSelectedBookId = id;
+            const book = booksData.find(b => b.id === id);
+            if (!book) return;
+
+            document.getElementById('detail-cover').src = book.coverUrl || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=300';
+            document.getElementById('detail-title').innerText = book.title;
+            document.getElementById('detail-author').innerText = book.author;
+            document.getElementById('detail-owner').innerText = book.owner || 'Club';
+            document.getElementById('detail-current-holder').innerText = book.currentHolder;
+
+            const recipientSelect = document.getElementById('transfer-recipient-select');
+            recipientSelect.innerHTML = membersData
+                .filter(m => m !== book.currentHolder)
+                .map(m => `<option value="${m}">${m}</option>`).join('');
+
+            document.getElementById('modal-book-details').classList.remove('hidden');
+        };
+
+        // DOM Listeners & Setup
+        document.addEventListener('DOMContentLoaded', () => {
+            initFirebase();
+
+            // Theme toggle
+            document.getElementById('theme-toggle').addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+            });
+
+            // Identity Switcher
+            document.getElementById('user-select-dropdown').addEventListener('change', (e) => {
+                currentUser = e.target.value;
+                localStorage.setItem('gg_active_user', currentUser);
+                renderApp();
+            });
+
+            // Library Search Input
+            document.getElementById('library-search').addEventListener('input', () => {
+                renderBooks();
+            });
+
+            // Modal Openers & Closers
+            document.getElementById('btn-open-members-modal').addEventListener('click', () => {
+                renderMembersListModal();
+                document.getElementById('modal-members').classList.remove('hidden');
+            });
+
+            document.getElementById('btn-open-api-search').addEventListener('click', () => {
+                document.getElementById('modal-api-search').classList.remove('hidden');
+            });
+
+            document.getElementById('btn-open-manual-add').addEventListener('click', () => {
+                renderUserDropdown();
+                document.getElementById('modal-manual-add').classList.remove('hidden');
+            });
+
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.closest('.fixed').classList.add('hidden');
                 });
-            } catch (err) {
-                resultsContainer.innerHTML = `<p class="text-center text-xs text-rose-500 py-6">Failed to query Open Library API.</p>`;
-            }
+            });
+
+            // Add Member Form
+            document.getElementById('add-member-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const input = document.getElementById('new-member-name');
+                if (input.value.trim()) {
+                    addMember(input.value.trim());
+                    input.value = '';
+                    renderMembersListModal();
+                }
+            });
+
+            // Custom Book Submit
+            document.getElementById('manual-book-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const title = document.getElementById('manual-title').value.trim();
+                const author = document.getElementById('manual-author').value.trim();
+                const coverUrl = document.getElementById('manual-cover').value.trim();
+                const owner = document.getElementById('manual-owner').value;
+                const currentHolder = document.getElementById('manual-initial-holder').value;
+
+                if (title && author) {
+                    saveBook({ title, author, coverUrl, owner, currentHolder });
+                    document.getElementById('manual-book-form').reset();
+                    document.getElementById('modal-manual-add').classList.add('hidden');
+                }
+            });
+
+            // Open Library API Search Form
+            document.getElementById('open-library-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const query = document.getElementById('api-search-input').value.trim();
+                const resultsContainer = document.getElementById('api-results-container');
+                if (!query) return;
+
+                resultsContainer.innerHTML = `<div class="text-center py-8 text-xs text-slate-400"><i class="fa-solid fa-spinner fa-spin text-lg mb-2 block"></i>Searching Open Library...</div>`;
+
+                try {
+                    const res = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=6`);
+                    const data = await res.json();
+
+                    if (!data.docs || data.docs.length === 0) {
+                        resultsContainer.innerHTML = `<div class="text-center py-8 text-xs text-slate-400">No books found matching "${query}".</div>`;
+                        return;
+                    }
+
+                    resultsContainer.innerHTML = data.docs.map(doc => {
+                        const title = (doc.title || 'Unknown Title').replace(/'/g, "\\'");
+                        const author = (doc.author_name ? doc.author_name[0] : 'Unknown Author').replace(/'/g, "\\'");
+                        const cover = doc.cover_i ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg` : '';
+
+                        return `
+                            <div class="flex items-center justify-between p-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition">
+                                <div class="flex items-center space-x-3 min-w-0 flex-1 pr-2">
+                                    ${cover ? `<img src="${cover}" class="w-10 h-14 object-cover rounded shadow-sm">` : `<div class="w-10 h-14 bg-slate-200 dark:bg-slate-700 rounded flex items-center justify-center text-xs">📖</div>`}
+                                    <div class="min-w-0 flex-1">
+                                        <h5 class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">${doc.title}</h5>
+                                        <p class="text-[11px] text-slate-400 truncate">${doc.author_name ? doc.author_name[0] : 'Unknown'}</p>
+                                    </div>
+                                </div>
+                                <button onclick="importApiBook('${title}', '${author}', '${cover}')" class="px-3 py-1 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs rounded-lg transition shadow-sm">
+                                    Import
+                                </button>
+                            </div>
+                        `;
+                    }).join('');
+
+                } catch (err) {
+                    resultsContainer.innerHTML = `<div class="text-center py-8 text-xs text-rose-500">Error connecting to Open Library.</div>`;
+                }
+            });
+
+            // Transfer/Pass Book Submit
+            document.getElementById('transfer-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const recipient = document.getElementById('transfer-recipient-select').value;
+                if (currentSelectedBookId && recipient) {
+                    const book = booksData.find(b => b.id === currentSelectedBookId);
+                    if (book) {
+                        book.currentHolder = recipient;
+                        saveBook(book);
+                    }
+                    document.getElementById('modal-book-details').classList.add('hidden');
+                }
+            });
+
+            // Delete Book Button
+            document.getElementById('btn-delete-book').addEventListener('click', () => {
+                if (currentSelectedBookId && confirm("Are you sure you want to remove this book from the club?")) {
+                    removeBook(currentSelectedBookId);
+                    document.getElementById('modal-book-details').classList.add('hidden');
+                }
+            });
         });
 
-        // Custom Manual Add
-        document.getElementById('manual-book-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newBook = {
-                title: document.getElementById('manual-title').value.trim(),
-                author: document.getElementById('manual-author').value.trim(),
-                coverUrl: document.getElementById('manual-cover').value.trim() || 'https://placehold.co/300x450/e2e8f0/64748b?text=No+Cover',
-                currentHolder: document.getElementById('manual-initial-holder').value
-            };
-            await saveBook(newBook);
-            document.getElementById('manual-book-form').reset();
-            document.getElementById('modal-manual-add').classList.add('hidden');
-        });
-
-        // Delete Book
-        document.getElementById('btn-delete-book').onclick = async () => {
-            if (currentSelectedBookId) {
-                await deleteBook(currentSelectedBookId);
-                document.getElementById('modal-book-details').classList.add('hidden');
-            }
+        // Global Helper for Open Library Import
+        window.importApiBook = (title, author, coverUrl) => {
+            saveBook({
+                title,
+                author,
+                coverUrl,
+                owner: currentUser,
+                currentHolder: currentUser
+            });
+            document.getElementById('modal-api-search').classList.add('hidden');
         };
 
-        // Modal Controls
-        document.getElementById('btn-open-members-modal').onclick = () => document.getElementById('modal-members').classList.remove('hidden');
-        document.getElementById('btn-open-api-search').onclick = () => document.getElementById('modal-api-search').classList.remove('hidden');
-        document.getElementById('btn-open-manual-add').onclick = () => document.getElementById('modal-manual-add').classList.remove('hidden');
+        function renderMembersListModal() {
+            const container = document.getElementById('members-list-container');
+            container.innerHTML = membersData.map(m => `
+                <div class="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-900 rounded-xl">
+                    <span class="text-xs font-bold text-slate-700 dark:text-slate-200">${m}</span>
+                    <button onclick="handleDeleteMember('${m}')" class="text-slate-400 hover:text-rose-500 px-2 py-1 text-xs">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
 
-        document.querySelectorAll('.close-modal').forEach(btn => {
-            btn.onclick = () => btn.closest('.fixed').classList.add('hidden');
-        });
-
-        document.getElementById('library-search').addEventListener('input', renderBooks);
-
-        // Theme Toggle
-        document.getElementById('theme-toggle').onclick = () => {
-            const html = document.documentElement;
-            html.classList.toggle('dark');
-            localStorage.setItem('gg_theme', html.classList.contains('dark') ? 'dark' : 'light');
+        window.handleDeleteMember = (name) => {
+            if (confirm(`Remove ${name} from the members list?`)) {
+                deleteMember(name);
+                renderMembersListModal();
+            }
         };
-
-        if (localStorage.getItem('gg_theme') === 'dark') document.documentElement.classList.add('dark');
-
-        // Init App
-        window.addEventListener('DOMContentLoaded', initFirebase);
     </script>
 </body>
 </html>
