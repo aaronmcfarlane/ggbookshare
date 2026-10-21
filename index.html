@@ -1,868 +1,912 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
+<html lang="en" class="h-full light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GG Book Share Club</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50: '#f0fdf4',
-              100: '#dcfce7',
-              500: '#22c55e',
-              600: '#16a34a',
-              700: '#15803d',
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GG Book Share Club</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            900: '#0c4a6e',
+                        },
+                        monster: {
+                            teal: '#14b8a6',
+                            purple: '#a855f7',
+                            pink: '#ec4899',
+                            amber: '#f59e0b'
+                        }
+                    }
+                }
             }
-          }
         }
-      }
-    }
-  </script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .font-monster { font-family: 'Fredoka', cursive, sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 4px; }
+        
+        @keyframes gentle-wiggle {
+            0%, 100% { transform: rotate(-3deg) translateY(0); }
+            50% { transform: rotate(3deg) translateY(-2px); }
+        }
+        .animate-monster {
+            animation: gentle-wiggle 3s ease-in-out infinite;
+        }
+    </style>
 </head>
-<body class="h-full flex flex-col text-slate-800 dark:text-slate-100 antialiased selection:bg-brand-500 selection:text-white">
+<body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200">
 
-  <!-- App Wrapper -->
-  <div id="app" class="min-h-screen flex flex-col">
-    
-    <!-- Header -->
-    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-30 shadow-sm transition-colors">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-          
-          <!-- Logo & Cute Book Monster Mascot -->
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center text-white shadow-md shadow-brand-500/20 transform hover:scale-105 transition-transform">
-              <!-- Cute Book Monster SVG -->
-              <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4" y="3" width="16" height="18" rx="3" fill="#22c55e" stroke="#15803d" />
-                <path d="M4 7h16" stroke="#ffffff" stroke-width="1.5"/>
-                <!-- Cute Eyes -->
-                <circle cx="9" cy="12" r="2" fill="#ffffff"/>
-                <circle cx="9.5" cy="12" r="0.8" fill="#000000"/>
-                <circle cx="15" cy="12" r="2" fill="#ffffff"/>
-                <circle cx="15.5" cy="12" r="0.8" fill="#000000"/>
-                <!-- Cute Monster Mouth -->
-                <path d="M10 16c1 1 3 1 4 0" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
-                <polygon points="11,15 12,16 13,15" fill="#ffffff"/>
-              </svg>
-            </div>
-            <div>
-              <h1 class="text-xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-                GG Book Share Club
-              </h1>
-            </div>
-          </div>
+    <div id="app" class="min-h-full flex flex-col">
+        <!-- Top Navigation Header -->
+        <header class="sticky top-0 z-30 bg-white/85 dark:bg-slate-800/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <!-- Logo & App Name with Cute Book Monster -->
+                    <div class="flex items-center space-x-3 cursor-pointer" onclick="switchMainMode('holdings')">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-500 via-teal-500 to-indigo-600 flex items-center justify-center p-1.5 shadow-md shadow-brand-500/20 animate-monster">
+                            <!-- Cute Book Monster SVG -->
+                            <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-sm">
+                                <rect x="18" y="15" width="64" height="70" rx="14" fill="#a855f7" />
+                                <rect x="22" y="20" width="56" height="60" rx="8" fill="#f8fafc" />
+                                <rect x="18" y="15" width="8" height="70" rx="4" fill="#9333ea" opacity="0.6" />
+                                <circle cx="38" cy="42" r="10" fill="#ffffff" />
+                                <circle cx="62" cy="42" r="10" fill="#ffffff" />
+                                <circle cx="40" cy="43" r="5" fill="#0f172a" />
+                                <circle cx="64" cy="43" r="5" fill="#0f172a" />
+                                <circle cx="42" cy="40" r="2" fill="#ffffff" />
+                                <circle cx="66" cy="40" r="2" fill="#ffffff" />
+                                <path d="M 36 58 Q 50 72 64 58" fill="#0f172a" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+                                <polygon points="44,59 48,59 46,64" fill="#ffffff" />
+                                <polygon points="52,59 56,59 54,64" fill="#ffffff" />
+                                <circle cx="30" cy="52" r="4" fill="#f43f5e" opacity="0.4" />
+                                <circle cx="70" cy="52" r="4" fill="#f43f5e" opacity="0.4" />
+                                <path d="M 78 45 Q 88 50 82 58" stroke="#ec4899" stroke-width="4" stroke-linecap="round" fill="none" />
+                                <path d="M 22 45 Q 12 50 18 58" stroke="#ec4899" stroke-width="4" stroke-linecap="round" fill="none" />
+                            </svg>
+                        </div>
+                        <span class="text-xl font-extrabold font-monster tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-brand-600 via-teal-600 to-purple-600 dark:from-brand-400 dark:via-teal-300 dark:to-purple-400">
+                            GG Book Share Club
+                        </span>
+                    </div>
 
-          <!-- Actions & Identity Selector -->
-          <div class="flex items-center gap-3">
+                    <!-- User Identity & Controls -->
+                    <div class="flex items-center space-x-2 sm:space-x-3">
+                        <div class="flex items-center bg-slate-100 dark:bg-slate-700/60 rounded-xl px-2.5 py-1 border border-slate-200 dark:border-slate-600">
+                            <i class="fa-solid fa-face-smile text-brand-600 dark:text-brand-400 mr-2 text-xs"></i>
+                            <span class="text-[11px] font-semibold text-slate-400 mr-1.5 hidden sm:inline">I am:</span>
+                            <select id="user-select-dropdown" class="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer">
+                                <!-- Alphabetically populated -->
+                            </select>
+                        </div>
+
+                        <button id="btn-open-members-modal" class="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-xs font-semibold flex items-center border border-slate-200 dark:border-slate-700" title="Manage People">
+                            <i class="fa-solid fa-users-gear text-purple-500 sm:mr-1.5"></i>
+                            <span class="hidden sm:inline">People</span>
+                        </button>
+
+                        <button id="theme-toggle" class="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                            <i class="fa-solid fa-moon text-base dark:hidden"></i>
+                            <i class="fa-solid fa-sun text-base hidden dark:block"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col space-y-5">
             
-            <!-- Active User Identity Dropdown -->
-            <div class="flex items-center bg-slate-100 dark:bg-slate-700/60 p-1.5 rounded-xl border border-slate-200 dark:border-slate-600">
-              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-2 hidden sm:inline">I am:</span>
-              <select id="activeUserSelect" class="bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium text-sm rounded-lg px-2.5 py-1 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                <!-- Populated dynamically -->
-              </select>
+            <!-- Summary Stats Bar -->
+            <div class="grid grid-cols-3 gap-3 bg-white dark:bg-slate-800/60 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+                <div class="space-y-0.5">
+                    <div class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Total Books</div>
+                    <div id="stat-total" class="text-base font-extrabold text-brand-600 dark:text-brand-400 font-monster">0</div>
+                </div>
+                <div class="space-y-0.5 border-x border-slate-100 dark:border-slate-700/60">
+                    <div class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">With Members</div>
+                    <div id="stat-loaned" class="text-base font-extrabold text-purple-600 dark:text-purple-400 font-monster">0</div>
+                </div>
+                <div class="space-y-0.5">
+                    <div class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Members</div>
+                    <div id="stat-members" class="text-base font-extrabold text-teal-600 dark:text-teal-400 font-monster">0</div>
+                </div>
             </div>
 
-            <!-- Add Book Button -->
-            <button onclick="openAddBookModal()" class="inline-flex items-center gap-2 px-3.5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm rounded-xl shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-500">
-              <i data-lucide="plus" class="w-4 h-4"></i>
-              <span class="hidden sm:inline">Add Book</span>
-            </button>
+            <!-- Primary Mode Switcher (Individual Holdings vs Full Library) -->
+            <div class="flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700 pb-3">
+                <div class="flex items-center p-1 bg-slate-200/70 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+                    <button id="mode-btn-holdings" onclick="switchMainMode('holdings')" class="px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-300 shadow-sm">
+                        <i class="fa-solid fa-user-shelf"></i>
+                        <span>Individual Holdings</span>
+                    </button>
+                    <button id="mode-btn-library" onclick="switchMainMode('library')" class="px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200">
+                        <i class="fa-solid fa-books"></i>
+                        <span>Full Book Library</span>
+                    </button>
+                </div>
 
-            <!-- Dark Mode Toggle -->
-            <button onclick="toggleDarkMode()" class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors" title="Toggle Theme">
-              <i data-lucide="moon" class="w-5 h-5 dark:hidden"></i>
-              <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
-            </button>
-            
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <!-- Main Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
-
-      <!-- Navigation & Stats Bar -->
-      <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-        
-        <!-- View Switcher Tabs -->
-        <div class="flex bg-slate-100 dark:bg-slate-700/50 p-1 rounded-xl gap-1">
-          <button id="viewHoldingsBtn" onclick="switchMainView('holdings')" class="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all shadow-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white">
-            <i data-lucide="users" class="w-4 h-4"></i>
-            Individual Holdings
-          </button>
-          <button id="viewLibraryBtn" onclick="switchMainView('library')" class="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">
-            <i data-lucide="library" class="w-4 h-4"></i>
-            Full Library
-          </button>
-        </div>
-
-        <!-- Quick Club Stats -->
-        <div class="flex items-center justify-around md:justify-end gap-6 text-sm border-t md:border-t-0 border-slate-100 dark:border-slate-700/60 pt-3 md:pt-0">
-          <div class="text-center md:text-right">
-            <span class="text-xs text-slate-500 dark:text-slate-400 block font-medium">Total Books</span>
-            <span id="statTotalBooks" class="text-base font-black text-slate-900 dark:text-white">0</span>
-          </div>
-          <div class="w-px h-8 bg-slate-200 dark:bg-slate-700"></div>
-          <div class="text-center md:text-right">
-            <span class="text-xs text-slate-500 dark:text-slate-400 block font-medium">On Loan</span>
-            <span id="statOnLoan" class="text-base font-black text-amber-600 dark:text-amber-400">0</span>
-          </div>
-          <div class="w-px h-8 bg-slate-200 dark:bg-slate-700"></div>
-          <div class="text-center md:text-right">
-            <span class="text-xs text-slate-500 dark:text-slate-400 block font-medium">Members</span>
-            <span id="statMembers" class="text-base font-black text-slate-900 dark:text-white">0</span>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- SECTION 1: Individual Holdings View -->
-      <section id="sectionHoldings" class="flex flex-col gap-6">
-        
-        <!-- Alphabetical Member Navigation Tabs -->
-        <div class="flex items-center justify-between gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-slate-200 dark:border-slate-700" id="memberTabsContainer">
-          <!-- Dynamically populated pills -->
-        </div>
-
-        <!-- Selected Member Shelf Hero -->
-        <div id="memberShelfHeader" class="bg-gradient-to-r from-brand-500/10 via-brand-500/5 to-transparent p-6 rounded-2xl border border-brand-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div class="flex items-center gap-4">
-            <div id="memberAvatar" class="w-14 h-14 rounded-2xl bg-brand-600 text-white text-xl font-bold flex items-center justify-center shadow-lg shadow-brand-500/20">
-              ?
+                <!-- Global Action Buttons -->
+                <div class="flex items-center space-x-2">
+                    <button id="btn-open-api-search" class="inline-flex items-center justify-center px-3 py-1.5 bg-gradient-to-r from-brand-600 to-teal-600 hover:from-brand-700 hover:to-teal-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                        <i class="fa-solid fa-cloud-arrow-down mr-1.5"></i> Import Book
+                    </button>
+                    <button id="btn-open-manual-add" class="inline-flex items-center justify-center px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm transition">
+                        <i class="fa-solid fa-plus mr-1 text-brand-600 dark:text-brand-400"></i> Custom
+                    </button>
+                </div>
             </div>
-            <div>
-              <h2 id="memberNameHeading" class="text-2xl font-black text-slate-900 dark:text-white">
-                Member's Books
-              </h2>
-              <p id="memberSubheading" class="text-sm text-slate-600 dark:text-slate-400">
-                Currently holding 0 books
-              </p>
+
+            <!-- SECTION A: INDIVIDUAL HOLDINGS VIEW -->
+            <div id="section-holdings" class="space-y-4">
+                <!-- Alphabetical Member Selector Bar -->
+                <div class="flex items-center space-x-2 overflow-x-auto custom-scrollbar pb-2" id="member-pills-bar">
+                    <!-- Populated dynamically alphabetically -->
+                </div>
+
+                <!-- Selected Member Hero Header -->
+                <div class="bg-gradient-to-r from-brand-500/10 via-purple-500/10 to-teal-500/10 border border-brand-500/20 dark:border-brand-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div class="flex items-center space-x-3">
+                        <div id="member-hero-avatar" class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-500 to-purple-600 text-white font-bold font-monster text-lg flex items-center justify-center shadow-sm">
+                            A
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">Personal Shelf</span>
+                                <span id="hero-my-badge" class="hidden px-2 py-0.2 text-[9px] font-extrabold uppercase rounded-full bg-teal-500 text-white">This is You</span>
+                            </div>
+                            <h2 id="member-hero-name" class="text-xl font-bold font-monster text-slate-800 dark:text-slate-100"></h2>
+                        </div>
+                    </div>
+                    <div class="text-right sm:text-left flex items-center space-x-2">
+                        <span class="text-xs text-slate-500 dark:text-slate-400">Currently holding:</span>
+                        <span id="member-hero-count" class="px-2.5 py-1 bg-white dark:bg-slate-800 font-extrabold text-sm rounded-xl text-brand-600 dark:text-brand-400 border border-slate-200 dark:border-slate-700 shadow-sm font-monster">0 books</span>
+                    </div>
+                </div>
             </div>
-          </div>
 
-          <div class="flex items-center gap-2">
-            <button onclick="openManageMembersModal()" class="text-xs font-semibold px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors inline-flex items-center gap-1.5">
-              <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
-              Manage Members
-            </button>
-          </div>
-        </div>
+            <!-- SECTION B: FULL LIBRARY VIEW -->
+            <div id="section-library" class="space-y-4 hidden">
+                <div class="bg-purple-900/10 border border-purple-500/20 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center text-lg shadow-sm">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold font-monster text-slate-800 dark:text-slate-100">Full Club Repository</h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Browse all books registered in the GG Book Share Club</p>
+                        </div>
+                    </div>
 
-        <!-- Member's Book Grid -->
-        <div id="memberBookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          <!-- Cards render here -->
-        </div>
+                    <!-- Library Filter Tabs & Search Input -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                        <div class="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700 text-xs font-semibold">
+                            <button id="filter-all" onclick="setLibraryFilter('all')" class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-300 shadow-sm">All</button>
+                            <button id="filter-available" onclick="setLibraryFilter('available')" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">Available</button>
+                            <button id="filter-loaned" onclick="setLibraryFilter('loaned')" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">On Loan</button>
+                        </div>
 
-      </section>
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" id="library-search" placeholder="Search title/author..." class="w-full sm:w-48 pl-8 pr-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none text-xs">
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-      <!-- SECTION 2: Full Library View -->
-      <section id="sectionLibrary" class="hidden flex-col gap-6">
-        
-        <!-- Search & Filter Controls -->
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          
-          <div class="relative flex-1">
-            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" id="librarySearchInput" oninput="renderLibraryView()" placeholder="Search title, author, owner, or holder..." class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-white">
-          </div>
+            <!-- Books Grid -->
+            <div id="books-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                <!-- Dynamic cards -->
+            </div>
 
-          <div class="flex items-center gap-1 overflow-x-auto">
-            <button onclick="setLibraryFilter('all')" id="filterBtnAll" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-500 text-white transition-colors">
-              All Books
-            </button>
-            <button onclick="setLibraryFilter('available')" id="filterBtnAvailable" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors">
-              Available
-            </button>
-            <button onclick="setLibraryFilter('loaned')" id="filterBtnLoaned" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors">
-              On Loan
-            </button>
-          </div>
-
-        </div>
-
-        <!-- Full Library Book Grid -->
-        <div id="fullLibraryGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          <!-- All Books render here -->
-        </div>
-
-      </section>
-
-    </main>
-
-  </div>
-
-  <!-- MODAL 1: Add Book Modal (with Owner dropdown) -->
-  <div id="addBookModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col gap-5 max-h-[90vh]">
-      
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
-        <div class="flex items-center gap-2">
-          <svg class="w-5 h-5 text-brand-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="4" y="3" width="16" height="18" rx="2" fill="#22c55e" stroke="#15803d" />
-            <circle cx="9" cy="11" r="1.5" fill="#fff"/><circle cx="15" cy="11" r="1.5" fill="#fff"/>
-            <path d="M10 15c1 1 3 1 4 0" stroke="#fff" stroke-width="1.5"/>
-          </svg>
-          <h3 class="text-lg font-bold text-slate-900 dark:text-white">Add Book to Club</h3>
-        </div>
-        <button onclick="closeModal('addBookModal')" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <!-- Open Library Search -->
-      <div class="flex flex-col gap-2">
-        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Search Open Library Database</label>
-        <div class="flex gap-2">
-          <input type="text" id="openLibraryQuery" placeholder="Search title, author, or ISBN..." class="flex-1 px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-white" onkeydown="if(event.key==='Enter') searchOpenLibrary()">
-          <button onclick="searchOpenLibrary()" class="px-4 py-2 bg-slate-900 dark:bg-slate-700 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 transition-colors">
-            Search
-          </button>
-        </div>
-      </div>
-
-      <div id="openLibraryResults" class="flex flex-col gap-2 overflow-y-auto max-h-48 scrollbar-none border border-slate-100 dark:border-slate-700/50 rounded-xl p-2 bg-slate-50/50 dark:bg-slate-900/50 hidden">
-      </div>
-
-      <div class="relative flex items-center my-1">
-        <div class="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
-        <span class="flex-shrink mx-3 text-xs uppercase font-bold text-slate-400">Or Manual Entry</span>
-        <div class="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
-      </div>
-
-      <!-- Book Form -->
-      <form id="addBookForm" onsubmit="handleAddBookSubmit(event)" class="flex flex-col gap-4">
-        <div>
-          <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Book Title *</label>
-          <input type="text" id="formTitle" required placeholder="e.g. Tomorrow, and Tomorrow, and Tomorrow" class="w-full mt-1 px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-white">
-        </div>
-        <div>
-          <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Author *</label>
-          <input type="text" id="formAuthor" required placeholder="e.g. Gabrielle Zevin" class="w-full mt-1 px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-white">
-        </div>
-        <div>
-          <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Cover Image URL (Optional)</label>
-          <input type="url" id="formCoverUrl" placeholder="https://..." class="w-full mt-1 px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-white">
-        </div>
-
-        <!-- OWNER SELECTION FIELD -->
-        <div>
-          <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Who owns this book? *</label>
-          <select id="formOwnerSelect" required class="w-full mt-1 px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-white">
-            <!-- Populated dynamically -->
-          </select>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
-          <button type="button" onclick="closeModal('addBookModal')" class="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl">
-            Cancel
-          </button>
-          <button type="submit" class="px-5 py-2 text-sm font-semibold bg-brand-600 hover:bg-brand-700 text-white rounded-xl shadow-sm">
-            Save Book
-          </button>
-        </div>
-      </form>
-
+            <!-- Empty State Display -->
+            <div id="empty-state" class="hidden flex-1 flex flex-col items-center justify-center py-12 text-center">
+                <div class="w-20 h-20 mb-3 animate-monster">
+                    <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
+                        <rect x="18" y="15" width="64" height="70" rx="14" fill="#a855f7" />
+                        <rect x="22" y="20" width="56" height="60" rx="8" fill="#f8fafc" />
+                        <rect x="18" y="15" width="8" height="70" rx="4" fill="#9333ea" opacity="0.6" />
+                        <circle cx="38" cy="42" r="9" fill="#ffffff" />
+                        <circle cx="62" cy="42" r="9" fill="#ffffff" />
+                        <circle cx="38" cy="42" r="4" fill="#0f172a" />
+                        <circle cx="62" cy="42" r="4" fill="#0f172a" />
+                        <path d="M 40 60 Q 50 52 60 60" fill="none" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+                        <circle cx="30" cy="52" r="4" fill="#f43f5e" opacity="0.4" />
+                        <circle cx="70" cy="52" r="4" fill="#f43f5e" opacity="0.4" />
+                    </svg>
+                </div>
+                <h3 id="empty-state-title" class="text-base font-bold font-monster text-slate-700 dark:text-slate-200">No books found!</h3>
+                <p id="empty-state-desc" class="text-xs text-slate-500 dark:text-slate-400 max-w-xs mt-1">The book monster is waiting for stories.</p>
+            </div>
+        </main>
     </div>
-  </div>
 
-  <!-- MODAL 2: Pass Book Modal -->
-  <div id="passBookModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col gap-5">
-      
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
-        <div class="flex items-center gap-2">
-          <i data-lucide="arrow-right-left" class="w-5 h-5 text-brand-600"></i>
-          <h3 class="text-lg font-bold text-slate-900 dark:text-white">Pass / Loan Book</h3>
-        </div>
-        <button onclick="closeModal('passBookModal')" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <div id="passBookDetailHeader" class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl flex items-center gap-3">
-        <!-- Injected -->
-      </div>
-
-      <form id="passBookForm" onsubmit="handlePassBookSubmit(event)" class="flex flex-col gap-4">
-        <input type="hidden" id="passBookId">
-        
-        <div>
-          <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pass Book To:</label>
-          <select id="passTargetUserSelect" required class="w-full mt-1.5 px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-            <!-- Dynamic -->
-          </select>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
-          <button type="button" onclick="closeModal('passBookModal')" class="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl">
-            Cancel
-          </button>
-          <button type="submit" class="px-5 py-2 text-sm font-semibold bg-brand-600 hover:bg-brand-700 text-white rounded-xl shadow-sm">
-            Confirm Transfer
-          </button>
-        </div>
-      </form>
-
-    </div>
-  </div>
-
-  <!-- MODAL 3: Manage Members -->
-  <div id="manageMembersModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col gap-5">
-      
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
-        <div class="flex items-center gap-2">
-          <i data-lucide="users" class="w-5 h-5 text-brand-600"></i>
-          <h3 class="text-lg font-bold text-slate-900 dark:text-white">Manage Members</h3>
-        </div>
-        <button onclick="closeModal('manageMembersModal')" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <form onsubmit="handleAddMemberSubmit(event)" class="flex gap-2">
-        <input type="text" id="newMemberNameInput" required placeholder="New member name..." class="flex-1 px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-white">
-        <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-semibold transition-colors">
-          Add
-        </button>
-      </form>
-
-      <div class="flex flex-col gap-2 max-h-60 overflow-y-auto scrollbar-none" id="manageMembersList">
-        <!-- Rendered dynamically -->
-      </div>
-
-      <div class="flex justify-end pt-3 border-t border-slate-100 dark:border-slate-700">
-        <button type="button" onclick="closeModal('manageMembersModal')" class="px-5 py-2 text-sm font-semibold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 rounded-xl">
-          Done
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- APPLICATION LOGIC -->
-  <script>
-    // LIVE FIREBASE CREDENTIALS
-    const firebaseConfig = {
-      apiKey: "AIzaSyASu0_zFykfL_r_7km2eTs9zAZo-mziqVA",
-      authDomain: "gg-book-share-club.firebaseapp.com",
-      projectId: "gg-book-share-club",
-      storageBucket: "gg-book-share-club.firebasestorage.app",
-      messagingSenderId: "15986078629",
-      appId: "1:15986078629:web:55e119d3476eae75ed6e4c",
-      measurementId: "G-7ZVN077WG4"
-    };
-
-    let db = null;
-    let auth = null;
-    let isFirebaseReady = false;
-
-    // Alphabetical Default Members List
-    const DEFAULT_MEMBERS = [
-      "Andrea", "Cheryl", "Courtney", "Jen P", "Kim B", "Roxana", "Sarah P", "Stephanie"
-    ];
-
-    let members = [...DEFAULT_MEMBERS];
-    let books = [];
-    let activeUser = "Andrea";
-    let selectedMemberTab = "Andrea";
-    let currentMainView = "holdings";
-    let libraryFilter = "all";
-
-    window.addEventListener('DOMContentLoaded', async () => {
-      initIcons();
-      loadLocalState();
-      setupFirebase();
-    });
-
-    function initIcons() {
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function loadLocalState() {
-      const savedUser = localStorage.getItem('gg_activeUser');
-      if (savedUser && members.includes(savedUser)) activeUser = savedUser;
-      
-      const savedTab = localStorage.getItem('gg_selectedTab');
-      if (savedTab && members.includes(savedTab)) selectedMemberTab = savedTab;
-    }
-
-    async function setupFirebase() {
-      try {
-        if (!firebase.apps.length) {
-          firebase.initializeApp(firebaseConfig);
-        }
-        db = firebase.firestore();
-        auth = firebase.auth();
-
-        await auth.signInAnonymously();
-        isFirebaseReady = true;
-
-        // Sync Members from Database
-        db.collection('members').onSnapshot(snapshot => {
-          if (!snapshot.empty) {
-            const fetched = [];
-            snapshot.forEach(doc => fetched.push(doc.data().name));
-            members = Array.from(new Set(fetched)).sort((a, b) => a.localeCompare(b));
-          } else {
-            DEFAULT_MEMBERS.forEach(name => {
-              db.collection('members').doc(name).set({ name });
-            });
-          }
-          ensureActiveUserValid();
-          renderUI();
-        }, err => console.warn("Members Sync Error: ", err));
-
-        // Sync Books from Database
-        db.collection('books').onSnapshot(snapshot => {
-          books = [];
-          snapshot.forEach(doc => {
-            books.push({ id: doc.id, ...doc.data() });
-          });
-          renderUI();
-        }, err => console.warn("Books Sync Error: ", err));
-
-      } catch (e) {
-        console.warn("Firebase fallback mode:", e);
-        renderUI();
-      }
-    }
-
-    function ensureActiveUserValid() {
-      if (!members.includes(activeUser) && members.length > 0) {
-        activeUser = members[0];
-      }
-      if (!members.includes(selectedMemberTab) && members.length > 0) {
-        selectedMemberTab = members[0];
-      }
-    }
-
-    function renderUI() {
-      members.sort((a, b) => a.localeCompare(b));
-      
-      renderActiveUserSelect();
-      renderStats();
-      renderMemberTabs();
-      
-      if (currentMainView === 'holdings') {
-        renderHoldingsView();
-      } else {
-        renderLibraryView();
-      }
-
-      initIcons();
-    }
-
-    function renderActiveUserSelect() {
-      const select = document.getElementById('activeUserSelect');
-      const ownerSelect = document.getElementById('formOwnerSelect');
-
-      select.innerHTML = members.map(m => `
-        <option value="${m}" ${m === activeUser ? 'selected' : ''}>${m}</option>
-      `).join('');
-
-      select.onchange = (e) => {
-        activeUser = e.target.value;
-        localStorage.setItem('gg_activeUser', activeUser);
-        renderUI();
-      };
-
-      if (ownerSelect) {
-        ownerSelect.innerHTML = members.map(m => `
-          <option value="${m}" ${m === activeUser ? 'selected' : ''}>${m}</option>
-        `).join('');
-      }
-    }
-
-    function renderStats() {
-      document.getElementById('statTotalBooks').innerText = books.length;
-      document.getElementById('statOnLoan').innerText = books.filter(b => b.holder !== b.owner).length;
-      document.getElementById('statMembers').innerText = members.length;
-    }
-
-    function renderMemberTabs() {
-      const container = document.getElementById('memberTabsContainer');
-      container.innerHTML = members.map(m => {
-        const holdingsCount = books.filter(b => b.holder === m).length;
-        const isSelected = m === selectedMemberTab;
-
-        return `
-          <button onclick="selectMemberTab('${m}')" class="px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-all ${
-            isSelected 
-              ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20' 
-              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-500'
-          }">
-            <span>${m}</span>
-            <span class="px-2 py-0.5 text-xs rounded-full ${
-              isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
-            }">${holdingsCount}</span>
-          </button>
-        `;
-      }).join('');
-    }
-
-    function selectMemberTab(name) {
-      selectedMemberTab = name;
-      localStorage.setItem('gg_selectedTab', name);
-      renderUI();
-    }
-
-    function renderHoldingsView() {
-      const heading = document.getElementById('memberNameHeading');
-      const subheading = document.getElementById('memberSubheading');
-      const avatar = document.getElementById('memberAvatar');
-      const grid = document.getElementById('memberBookGrid');
-
-      heading.innerText = `${selectedMemberTab}'s Shelf`;
-      avatar.innerText = selectedMemberTab.charAt(0).toUpperCase();
-
-      const memberBooks = books.filter(b => b.holder === selectedMemberTab);
-      subheading.innerText = `Currently holding ${memberBooks.length} book${memberBooks.length === 1 ? '' : 's'}`;
-
-      if (memberBooks.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-full py-12 flex flex-col items-center justify-center text-center bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 p-8">
-            <svg class="w-12 h-12 text-slate-300 dark:text-slate-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <rect x="4" y="3" width="16" height="18" rx="2" fill="none" stroke="currentColor"/>
-              <circle cx="9" cy="11" r="1.5"/><circle cx="15" cy="11" r="1.5"/>
-              <path d="M10 15c1 1 3 1 4 0"/>
-            </svg>
-            <h4 class="text-base font-bold text-slate-700 dark:text-slate-300">${selectedMemberTab} has no books right now.</h4>
-            <p class="text-xs text-slate-400 max-w-sm mt-1">Pass a book to ${selectedMemberTab} or switch to the Full Library to find books to borrow.</p>
-          </div>
-        `;
-        return;
-      }
-
-      grid.innerHTML = memberBooks.map(book => createBookCardHTML(book)).join('');
-    }
-
-    function renderLibraryView() {
-      const grid = document.getElementById('fullLibraryGrid');
-      const searchQuery = (document.getElementById('librarySearchInput')?.value || '').toLowerCase();
-
-      let filtered = books.filter(b => {
-        const matchesSearch = b.title.toLowerCase().includes(searchQuery) ||
-                              b.author.toLowerCase().includes(searchQuery) ||
-                              (b.owner && b.owner.toLowerCase().includes(searchQuery)) ||
-                              (b.holder && b.holder.toLowerCase().includes(searchQuery));
-        
-        if (!matchesSearch) return false;
-
-        if (libraryFilter === 'available') return b.holder === b.owner;
-        if (libraryFilter === 'loaned') return b.holder !== b.owner;
-        return true;
-      });
-
-      if (filtered.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-full py-12 flex flex-col items-center justify-center text-center bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 p-8">
-            <i data-lucide="search-x" class="w-12 h-12 text-slate-300 dark:text-slate-600 mb-3"></i>
-            <h4 class="text-base font-bold text-slate-700 dark:text-slate-300">No books found matching your filter.</h4>
-          </div>
-        `;
-        return;
-      }
-
-      grid.innerHTML = filtered.map(book => createBookCardHTML(book)).join('');
-    }
-
-    // ORIGINAL BOOK CARD WITH OWNER & HOLDER BADGES
-    function createBookCardHTML(book) {
-      const isOwner = book.owner === book.holder;
-      const defaultCover = 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=300';
-      const coverUrl = book.coverUrl || defaultCover;
-
-      return `
-        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all group">
-          
-          <div class="flex gap-3">
-            <img src="${coverUrl}" alt="${book.title}" class="w-20 h-28 object-cover rounded-xl shadow-sm bg-slate-100 dark:bg-slate-900 flex-shrink-0" onerror="this.src='${defaultCover}'">
-            
-            <div class="flex flex-col justify-between flex-1 min-w-0">
-              <div>
-                <h3 class="font-bold text-sm text-slate-900 dark:text-white line-clamp-2 leading-tight group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
-                  ${book.title}
+    <!-- MODAL 1: Manage People (Add / Remove Members) -->
+    <div id="modal-members" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-base font-bold font-monster text-slate-800 dark:text-slate-100 flex items-center">
+                    <i class="fa-solid fa-users text-purple-500 mr-2"></i> Club Members (Alphabetical)
                 </h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 truncate">
-                  ${book.author}
-                </p>
-              </div>
-
-              <div class="flex flex-col gap-1 mt-2">
-                <!-- Owner Badge -->
-                <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                  <i data-lucide="user" class="w-3 h-3 text-slate-400"></i>
-                  Owner: <strong class="text-slate-800 dark:text-white">${book.owner || 'Club'}</strong>
-                </span>
-
-                <!-- Holder Status -->
-                ${isOwner ? `
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 w-fit">
-                    <i data-lucide="check-circle" class="w-2.5 h-2.5"></i> With Owner
-                  </span>
-                ` : `
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 w-fit">
-                    <i data-lucide="arrow-right-left" class="w-2.5 h-2.5"></i> With ${book.holder}
-                  </span>
-                `}
-              </div>
-
+                <button class="close-modal text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-          </div>
+            
+            <form id="add-member-form" class="flex gap-2">
+                <input type="text" id="new-member-name" required placeholder="Add new member name..." class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-xs shadow transition">Add Person</button>
+            </form>
 
-          <div class="pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-2">
-            <button onclick="openPassBookModal('${book.id}')" class="flex-1 py-1.5 px-3 bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/50 dark:hover:bg-brand-900 text-brand-700 dark:text-brand-300 font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5">
-              <i data-lucide="send" class="w-3.5 h-3.5"></i>
-              Pass Book
-            </button>
-            <button onclick="deleteBook('${book.id}')" class="p-1.5 text-slate-400 hover:text-red-500 rounded-lg transition-colors" title="Remove Book">
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>
-          </div>
-
-        </div>
-      `;
-    }
-
-    function switchMainView(view) {
-      currentMainView = view;
-      const holdingsSec = document.getElementById('sectionHoldings');
-      const librarySec = document.getElementById('sectionLibrary');
-      const holdingsBtn = document.getElementById('viewHoldingsBtn');
-      const libraryBtn = document.getElementById('viewLibraryBtn');
-
-      if (view === 'holdings') {
-        holdingsSec.classList.remove('hidden');
-        librarySec.classList.add('hidden');
-        holdingsBtn.className = "flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all shadow-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white";
-        libraryBtn.className = "flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all";
-      } else {
-        holdingsSec.classList.add('hidden');
-        librarySec.classList.remove('hidden');
-        libraryBtn.className = "flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all shadow-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white";
-        holdingsBtn.className = "flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all";
-      }
-
-      renderUI();
-    }
-
-    function setLibraryFilter(filter) {
-      libraryFilter = filter;
-      ['all', 'available', 'loaned'].forEach(f => {
-        const btn = document.getElementById(`filterBtn${f.charAt(0).toUpperCase() + f.slice(1)}`);
-        if (f === filter) {
-          btn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-500 text-white transition-colors";
-        } else {
-          btn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors";
-        }
-      });
-      renderLibraryView();
-    }
-
-    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-    function openAddBookModal() {
-      renderActiveUserSelect();
-      openModal('addBookModal');
-    }
-
-    async function searchOpenLibrary() {
-      const query = document.getElementById('openLibraryQuery').value.trim();
-      const container = document.getElementById('openLibraryResults');
-      if (!query) return;
-
-      container.classList.remove('hidden');
-      container.innerHTML = `<p class="text-xs text-slate-400 p-2">Searching Open Library...</p>`;
-
-      try {
-        const res = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=4`);
-        const data = await res.json();
-
-        if (!data.docs || data.docs.length === 0) {
-          container.innerHTML = `<p class="text-xs text-slate-400 p-2">No results found.</p>`;
-          return;
-        }
-
-        container.innerHTML = data.docs.map(doc => {
-          const title = doc.title || 'Unknown Title';
-          const author = doc.author_name ? doc.author_name[0] : 'Unknown Author';
-          const cover = doc.cover_i ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg` : '';
-
-          return `
-            <div onclick="selectOpenLibraryBook('${escapeQuotes(title)}', '${escapeQuotes(author)}', '${cover}')" class="flex items-center gap-3 p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-slate-200">
-              ${cover ? `<img src="${cover}" class="w-8 h-12 object-cover rounded">` : `<div class="w-8 h-12 bg-slate-200 rounded flex items-center justify-center text-xs">📖</div>`}
-              <div class="min-w-0 flex-1">
-                <p class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">${title}</p>
-                <p class="text-[11px] text-slate-500 truncate">${author}</p>
-              </div>
+            <div class="border-t border-slate-100 dark:border-slate-700 pt-3">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Members List</label>
+                <div id="members-list-container" class="space-y-1.5 max-h-52 overflow-y-auto custom-scrollbar pr-1">
+                    <!-- Alphabetically populated -->
+                </div>
             </div>
-          `;
-        }).join('');
-
-      } catch (err) {
-        container.innerHTML = `<p class="text-xs text-red-500 p-2">Failed to search database.</p>`;
-      }
-    }
-
-    function escapeQuotes(str) { return str.replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
-
-    function selectOpenLibraryBook(title, author, coverUrl) {
-      document.getElementById('formTitle').value = title;
-      document.getElementById('formAuthor').value = author;
-      document.getElementById('formCoverUrl').value = coverUrl;
-      document.getElementById('openLibraryResults').classList.add('hidden');
-    }
-
-    async function handleAddBookSubmit(e) {
-      e.preventDefault();
-      const title = document.getElementById('formTitle').value.trim();
-      const author = document.getElementById('formAuthor').value.trim();
-      const coverUrl = document.getElementById('formCoverUrl').value.trim();
-      const owner = document.getElementById('formOwnerSelect').value;
-
-      const newBook = {
-        title,
-        author,
-        coverUrl,
-        owner,
-        holder: owner,
-        createdAt: Date.now()
-      };
-
-      if (isFirebaseReady) {
-        await db.collection('books').add(newBook);
-      } else {
-        books.push({ id: 'local_' + Date.now(), ...newBook });
-        renderUI();
-      }
-
-      closeModal('addBookModal');
-      document.getElementById('addBookForm').reset();
-    }
-
-    function openPassBookModal(bookId) {
-      const book = books.find(b => b.id === bookId);
-      if (!book) return;
-
-      document.getElementById('passBookId').value = book.id;
-      
-      const header = document.getElementById('passBookDetailHeader');
-      const defaultCover = 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=300';
-      
-      header.innerHTML = `
-        <img src="${book.coverUrl || defaultCover}" class="w-10 h-14 object-cover rounded-lg shadow-sm">
-        <div>
-          <h4 class="font-bold text-sm text-slate-900 dark:text-white">${book.title}</h4>
-          <p class="text-xs text-slate-500">Currently with: <strong>${book.holder}</strong></p>
         </div>
-      `;
+    </div>
 
-      const targetSelect = document.getElementById('passTargetUserSelect');
-      targetSelect.innerHTML = members
-        .filter(m => m !== book.holder)
-        .map(m => `<option value="${m}">${m}</option>`).join('');
+    <!-- MODAL 2: Open Library Search & Import -->
+    <div id="modal-api-search" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                <h3 class="text-base font-bold font-monster text-slate-800 dark:text-slate-100 flex items-center">
+                    <i class="fa-solid fa-cloud-arrow-down text-brand-600 mr-2"></i> Search Open Library
+                </h3>
+                <button class="close-modal text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div class="p-4 space-y-3">
+                <form id="open-library-form" class="flex gap-2">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="api-search-input" placeholder="Search title, author, or ISBN..." class="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none text-xs">
+                    </div>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-xs transition">Search</button>
+                </form>
+            </div>
 
-      openModal('passBookModal');
-    }
-
-    async function handlePassBookSubmit(e) {
-      e.preventDefault();
-      const bookId = document.getElementById('passBookId').value;
-      const targetUser = document.getElementById('passTargetUserSelect').value;
-
-      if (isFirebaseReady) {
-        await db.collection('books').doc(bookId).update({ holder: targetUser });
-      } else {
-        const book = books.find(b => b.id === bookId);
-        if (book) book.holder = targetUser;
-        renderUI();
-      }
-
-      closeModal('passBookModal');
-    }
-
-    async function deleteBook(bookId) {
-      if (!confirm("Are you sure you want to remove this book from the library?")) return;
-      
-      if (isFirebaseReady) {
-        await db.collection('books').doc(bookId).delete();
-      } else {
-        books = books.filter(b => b.id !== bookId);
-        renderUI();
-      }
-    }
-
-    function openManageMembersModal() {
-      renderManageMembersList();
-      openModal('manageMembersModal');
-    }
-
-    function renderManageMembersList() {
-      const list = document.getElementById('manageMembersList');
-      list.innerHTML = members.map(m => `
-        <div class="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900 rounded-xl">
-          <span class="text-sm font-semibold text-slate-800 dark:text-slate-200">${m}</span>
-          <button onclick="removeMember('${m}')" class="p-1 text-slate-400 hover:text-red-500 rounded-lg">
-            <i data-lucide="trash-2" class="w-4 h-4"></i>
-          </button>
+            <div id="api-results-container" class="flex-1 overflow-y-auto custom-scrollbar p-4 pt-0 space-y-2 divide-y divide-slate-100 dark:divide-slate-700/50">
+                <div class="text-center py-10 text-slate-400">
+                    <p class="text-xs">Type a title or author above to import books.</p>
+                </div>
+            </div>
         </div>
-      `).join('');
-      initIcons();
-    }
+    </div>
 
-    async function handleAddMemberSubmit(e) {
-      e.preventDefault();
-      const input = document.getElementById('newMemberNameInput');
-      const name = input.value.trim();
+    <!-- MODAL 3: Custom Book Add -->
+    <div id="modal-manual-add" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
+                <h3 class="text-base font-bold font-monster text-slate-800 dark:text-slate-100">Add Custom Book</h3>
+                <button class="close-modal text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="manual-book-form" class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Title *</label>
+                    <input type="text" id="manual-title" required class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Author *</label>
+                    <input type="text" id="manual-author" required class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cover Image URL (Optional)</label>
+                    <input type="url" id="manual-cover" placeholder="https://..." class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Who currently has this book?</label>
+                    <select id="manual-initial-holder" class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" class="close-modal px-3 py-1.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs">Cancel</button>
+                    <button type="submit" class="px-4 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold shadow">Add Book</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-      if (name && !members.includes(name)) {
-        if (isFirebaseReady) {
-          await db.collection('members').doc(name).set({ name });
-        } else {
-          members.push(name);
-          renderUI();
+    <!-- MODAL 4: Book Details & Simple Pass Screen -->
+    <div id="modal-book-details" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                <span class="text-xs font-bold font-monster text-slate-600 dark:text-slate-300">Book Options</span>
+                <div class="flex items-center space-x-2">
+                    <button id="btn-delete-book" class="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg text-xs" title="Remove Book">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                    <button class="close-modal text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+            </div>
+
+            <div class="p-5 space-y-5">
+                <div class="flex space-x-4">
+                    <img id="detail-cover" src="" alt="Book Cover" class="w-24 h-36 object-cover rounded-xl shadow border border-slate-200 dark:border-slate-700 flex-shrink-0">
+                    <div class="space-y-2">
+                        <h2 id="detail-title" class="text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight"></h2>
+                        <p id="detail-author" class="text-xs font-medium text-slate-500 dark:text-slate-400"></p>
+                        
+                        <div class="pt-2">
+                            <span class="text-[10px] uppercase font-bold text-slate-400">Currently held by:</span>
+                            <div id="detail-current-holder" class="text-sm font-bold text-brand-600 dark:text-brand-400"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pass Book Form -->
+                <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200/80 dark:border-slate-700 space-y-3">
+                    <h4 class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center">
+                        <i class="fa-solid fa-arrow-right-arrow-left text-brand-600 mr-2"></i> Pass Book
+                    </h4>
+                    <form id="transfer-form" class="space-y-3">
+                        <div>
+                            <label class="block text-xs text-slate-500 mb-1">Choose member recipient</label>
+                            <select id="transfer-recipient-select" required class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                <!-- Dynamic member list -->
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold shadow transition">
+                            Confirm Pass
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gg-book-share-club';
+        let db = null;
+        let auth = null;
+        
+        let booksData = [];
+        // Requirement 1: Alphabetically sorted default members list
+        let membersData = ['Andrea', 'Cheryl', 'Courtney', 'Jen P', 'Kim B', 'Roxana', 'Sarah P', 'Stephanie']; 
+        let currentUser = localStorage.getItem('gg_active_user') || 'Andrea';
+        
+        let currentMainMode = 'holdings'; // 'holdings' | 'library'
+        let selectedMember = 'Andrea';
+        let libraryFilter = 'all'; // 'all' | 'available' | 'loaned'
+        let currentSelectedBookId = null;
+
+        async function initFirebase() {
+            try {
+                const firebaseConfig = {
+  apiKey: "AIzaSyASu0_zFykfL_r_7km2eTs9zAZo-mziqVA",
+  authDomain: "gg-book-share-club.firebaseapp.com",
+  projectId: "gg-book-share-club",
+  storageBucket: "gg-book-share-club.firebasestorage.app",
+  messagingSenderId: "15986078629",
+  appId: "1:15986078629:web:55e119d3476eae75ed6e4c",
+  measurementId: "G-7ZVN077WG4"
+};
+
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                setupRealtimeListeners();
+            } catch (err) {
+                console.warn("Firebase fallback to local cache:", err);
+                initLocalFallback();
+            }
         }
-        input.value = '';
-        renderManageMembersList();
-      }
-    }
 
-    async function removeMember(name) {
-      if (members.length <= 1) {
-        alert("You must keep at least one member.");
-        return;
-      }
-      if (!confirm(`Remove ${name}?`)) return;
+        function getCollectionRef(name) {
+            return collection(db, 'artifacts', appId, 'public', 'data', name);
+        }
 
-      if (isFirebaseReady) {
-        await db.collection('members').doc(name).delete();
-      } else {
-        members = members.filter(m => m !== name);
-        renderUI();
-      }
-      renderManageMembersList();
-    }
+        function sortMembersAlphabetically() {
+            membersData.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+        }
 
-    function toggleDarkMode() {
-      document.documentElement.classList.toggle('dark');
-    }
-  </script>
+        function setupRealtimeListeners() {
+            if (!db) return;
+
+            onSnapshot(getCollectionRef('books'), (snapshot) => {
+                booksData = [];
+                snapshot.forEach((docSnap) => {
+                    booksData.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderApp();
+            }, (err) => console.error(err));
+
+            onSnapshot(getCollectionRef('members'), (snapshot) => {
+                const fetchedMembers = [];
+                snapshot.forEach((docSnap) => {
+                    fetchedMembers.push(docSnap.data().name);
+                });
+                if (fetchedMembers.length > 0) {
+                    membersData = fetchedMembers;
+                    sortMembersAlphabetically();
+                }
+                renderApp();
+            }, (err) => console.error(err));
+        }
+
+        function initLocalFallback() {
+            const storedBooks = localStorage.getItem('gg_books');
+            const storedMembers = localStorage.getItem('gg_members');
+            if (storedBooks) booksData = JSON.parse(storedBooks);
+            if (storedMembers) {
+                membersData = JSON.parse(storedMembers);
+                sortMembersAlphabetically();
+            }
+            renderApp();
+        }
+
+        function saveLocalFallback() {
+            localStorage.setItem('gg_books', JSON.stringify(booksData));
+            localStorage.setItem('gg_members', JSON.stringify(membersData));
+        }
+
+        async function saveBook(bookObj) {
+            if (db && auth.currentUser) {
+                try {
+                    if (!bookObj.id) {
+                        const newRef = doc(getCollectionRef('books'));
+                        bookObj.id = newRef.id;
+                    }
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'books', bookObj.id);
+                    await setDoc(docRef, bookObj, { merge: true });
+                    return;
+                } catch (e) { console.error(e); }
+            }
+            if (!bookObj.id) bookObj.id = 'book-' + Date.now();
+            const idx = booksData.findIndex(b => b.id === bookObj.id);
+            if (idx >= 0) booksData[idx] = bookObj;
+            else booksData.unshift(bookObj);
+            saveLocalFallback();
+            renderApp();
+        }
+
+        async function deleteBook(bookId) {
+            if (db && auth.currentUser) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'books', bookId));
+                    return;
+                } catch (e) { console.error(e); }
+            }
+            booksData = booksData.filter(b => b.id !== bookId);
+            saveLocalFallback();
+            renderApp();
+        }
+
+        async function saveMembersList() {
+            sortMembersAlphabetically();
+            if (db && auth.currentUser) {
+                try {
+                    for (const m of membersData) {
+                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', m), { name: m });
+                    }
+                } catch(e) { console.error(e); }
+            }
+            saveLocalFallback();
+        }
+
+        async function removeMemberFromDb(memberName) {
+            if (db && auth.currentUser) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', memberName));
+                } catch(e) { console.error(e); }
+            }
+            membersData = membersData.filter(m => m !== memberName);
+            sortMembersAlphabetically();
+            saveLocalFallback();
+            renderApp();
+        }
+
+        // Global Mode Switcher
+        window.switchMainMode = function(mode) {
+            currentMainMode = mode;
+            renderApp();
+        };
+
+        window.setLibraryFilter = function(filter) {
+            libraryFilter = filter;
+            renderApp();
+        };
+
+        function renderApp() {
+            sortMembersAlphabetically();
+            
+            if (!membersData.includes(currentUser) && membersData.length > 0) {
+                currentUser = membersData[0];
+            }
+            if (!membersData.includes(selectedMember) && membersData.length > 0) {
+                selectedMember = membersData[0];
+            }
+
+            renderStats();
+            renderUserDropdown();
+            renderModeControls();
+            renderHoldingsMemberPills();
+            renderMemberListModal();
+            renderBooks();
+        }
+
+        function renderStats() {
+            document.getElementById('stat-total').textContent = booksData.length;
+            const holdingCount = booksData.filter(b => !!b.currentHolder).length;
+            document.getElementById('stat-loaned').textContent = holdingCount;
+            document.getElementById('stat-members').textContent = membersData.length;
+        }
+
+        function renderUserDropdown() {
+            const dropdown = document.getElementById('user-select-dropdown');
+            dropdown.innerHTML = '';
+
+            membersData.forEach(member => {
+                const opt = document.createElement('option');
+                opt.value = member;
+                opt.textContent = member;
+                if (member === currentUser) opt.selected = true;
+                dropdown.appendChild(opt);
+            });
+        }
+
+        function renderModeControls() {
+            const btnHoldings = document.getElementById('mode-btn-holdings');
+            const btnLibrary = document.getElementById('mode-btn-library');
+            const secHoldings = document.getElementById('section-holdings');
+            const secLibrary = document.getElementById('section-library');
+
+            if (currentMainMode === 'holdings') {
+                btnHoldings.className = "px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-300 shadow-sm";
+                btnLibrary.className = "px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200";
+                secHoldings.classList.remove('hidden');
+                secLibrary.classList.add('hidden');
+            } else {
+                btnLibrary.className = "px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-300 shadow-sm";
+                btnHoldings.className = "px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200";
+                secLibrary.classList.remove('hidden');
+                secHoldings.classList.add('hidden');
+            }
+
+            // Update Library Filter Tabs UI
+            ['all', 'available', 'loaned'].forEach(f => {
+                const btn = document.getElementById(`filter-${f}`);
+                if (btn) {
+                    if (libraryFilter === f) {
+                        btn.className = "px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-300 shadow-sm";
+                    } else {
+                        btn.className = "px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200";
+                    }
+                }
+            });
+        }
+
+        function renderHoldingsMemberPills() {
+            const bar = document.getElementById('member-pills-bar');
+            bar.innerHTML = '';
+
+            membersData.forEach(member => {
+                const count = booksData.filter(b => b.currentHolder === member).length;
+                const isSelected = selectedMember === member;
+                const isMe = currentUser === member;
+
+                const btn = document.createElement('button');
+                btn.className = `px-3 py-1.5 text-xs font-semibold rounded-xl whitespace-nowrap transition flex items-center space-x-1.5 ${
+                    isSelected 
+                        ? 'bg-brand-600 text-white shadow-sm font-bold' 
+                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
+                }`;
+
+                btn.innerHTML = `
+                    <span>${member}</span>
+                    ${isMe ? '<i class="fa-solid fa-user text-[10px] opacity-75"></i>' : ''}
+                    <span class="px-1.5 py-0.2 text-[10px] rounded-full ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}">${count}</span>
+                `;
+                btn.onclick = () => {
+                    selectedMember = member;
+                    renderApp();
+                };
+                bar.appendChild(btn);
+            });
+
+            // Update Hero Banner
+            document.getElementById('member-hero-name').textContent = selectedMember;
+            document.getElementById('member-hero-avatar').textContent = selectedMember.charAt(0).toUpperCase();
+            
+            const count = booksData.filter(b => b.currentHolder === selectedMember).length;
+            document.getElementById('member-hero-count').textContent = `${count} ${count === 1 ? 'book' : 'books'}`;
+
+            const badgeMe = document.getElementById('hero-my-badge');
+            if (selectedMember === currentUser) badgeMe.classList.remove('hidden');
+            else badgeMe.classList.add('hidden');
+        }
+
+        function renderBooks() {
+            const container = document.getElementById('books-container');
+            const emptyState = document.getElementById('empty-state');
+            container.innerHTML = '';
+
+            let filtered = [];
+
+            if (currentMainMode === 'holdings') {
+                filtered = booksData.filter(b => b.currentHolder === selectedMember);
+            } else {
+                const query = document.getElementById('library-search').value.toLowerCase().trim();
+                filtered = booksData.filter(b => {
+                    const matchesQuery = !query || b.title?.toLowerCase().includes(query) || b.author?.toLowerCase().includes(query);
+                    if (!matchesQuery) return false;
+
+                    if (libraryFilter === 'available') return !b.currentHolder;
+                    if (libraryFilter === 'loaned') return !!b.currentHolder;
+                    return true;
+                });
+            }
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                container.classList.add('hidden');
+                
+                if (currentMainMode === 'holdings') {
+                    document.getElementById('empty-state-title').textContent = `${selectedMember} currently has no books`;
+                    document.getElementById('empty-state-desc').textContent = `Pass a book to ${selectedMember} or import a new book.`;
+                } else {
+                    document.getElementById('empty-state-title').textContent = 'No library books match filter';
+                    document.getElementById('empty-state-desc').textContent = 'Try another search query or clear filters.';
+                }
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            filtered.forEach(book => {
+                const cover = book.coverUrl || 'https://placehold.co/300x450/e2e8f0/64748b?text=No+Cover';
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition duration-200 flex flex-col overflow-hidden cursor-pointer group";
+                card.onclick = () => openBookDetailsModal(book.id);
+
+                const holderBadge = book.currentHolder 
+                    ? `<span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-purple-900/80 text-white backdrop-blur-md truncate block text-center">With: ${book.currentHolder}</span>`
+                    : `<span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-teal-600/90 text-white backdrop-blur-md truncate block text-center">Available</span>`;
+
+                card.innerHTML = `
+                    <div class="relative h-48 bg-slate-100 dark:bg-slate-900 overflow-hidden flex items-center justify-center">
+                        <img src="${cover}" alt="${book.title}" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://placehold.co/300x450/e2e8f0/64748b?text=No+Cover'">
+                        <div class="absolute bottom-2 left-2 right-2">
+                            ${holderBadge}
+                        </div>
+                    </div>
+                    <div class="p-3.5 flex-1 flex flex-col justify-between space-y-2">
+                        <div>
+                            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm line-clamp-1 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition">${book.title}</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">${book.author}</p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderMemberListModal() {
+            const container = document.getElementById('members-list-container');
+            container.innerHTML = '';
+
+            membersData.forEach(member => {
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700/60 text-xs";
+                row.innerHTML = `
+                    <span class="font-medium text-slate-700 dark:text-slate-200">${member}</span>
+                    <button class="remove-member-btn text-rose-500 hover:text-rose-700 p-1" title="Remove Member">
+                        <i class="fa-solid fa-trash text-xs"></i>
+                    </button>
+                `;
+
+                row.querySelector('.remove-member-btn').onclick = () => {
+                    if (membersData.length <= 1) {
+                        alert("You must keep at least one member.");
+                        return;
+                    }
+                    removeMemberFromDb(member);
+                };
+
+                container.appendChild(row);
+            });
+
+            const manualHolderSelect = document.getElementById('manual-initial-holder');
+            manualHolderSelect.innerHTML = '';
+            membersData.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = m;
+                if (m === currentUser) opt.selected = true;
+                manualHolderSelect.appendChild(opt);
+            });
+        }
+
+        function openBookDetailsModal(bookId) {
+            currentSelectedBookId = bookId;
+            const book = booksData.find(b => b.id === bookId);
+            if (!book) return;
+
+            document.getElementById('detail-title').textContent = book.title;
+            document.getElementById('detail-author').textContent = `By ${book.author}`;
+            document.getElementById('detail-current-holder').textContent = book.currentHolder || 'Unassigned';
+            document.getElementById('detail-cover').src = book.coverUrl || 'https://placehold.co/300x450/e2e8f0/64748b?text=No+Cover';
+
+            const recipientSelect = document.getElementById('transfer-recipient-select');
+            recipientSelect.innerHTML = '';
+            membersData.forEach(member => {
+                const opt = document.createElement('option');
+                opt.value = member;
+                opt.textContent = member;
+                if (member !== book.currentHolder) opt.selected = true;
+                recipientSelect.appendChild(opt);
+            });
+
+            document.getElementById('modal-book-details').classList.remove('hidden');
+        }
+
+        // Event Listeners
+        document.getElementById('user-select-dropdown').addEventListener('change', (e) => {
+            currentUser = e.target.value;
+            localStorage.setItem('gg_active_user', currentUser);
+            renderApp();
+        });
+
+        document.getElementById('add-member-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newName = document.getElementById('new-member-name').value.trim();
+            if (newName && !membersData.includes(newName)) {
+                membersData.push(newName);
+                saveMembersList();
+                document.getElementById('new-member-name').value = '';
+                renderApp();
+            }
+        });
+
+        document.getElementById('transfer-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentSelectedBookId) return;
+
+            const targetRecipient = document.getElementById('transfer-recipient-select').value;
+            const book = booksData.find(b => b.id === currentSelectedBookId);
+            if (book) {
+                book.currentHolder = targetRecipient;
+                await saveBook(book);
+                document.getElementById('modal-book-details').classList.add('hidden');
+            }
+        });
+
+        // Open Library API Search
+        document.getElementById('open-library-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = document.getElementById('api-search-input').value.trim();
+            if (!query) return;
+
+            const resultsContainer = document.getElementById('api-results-container');
+            resultsContainer.innerHTML = `
+                <div class="text-center py-8 text-slate-400">
+                    <i class="fa-solid fa-spinner fa-spin text-2xl text-brand-600 mb-2"></i>
+                    <p class="text-xs">Searching Open Library...</p>
+                </div>
+            `;
+
+            try {
+                const res = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=8`);
+                const data = await res.json();
+
+                if (!data.docs || data.docs.length === 0) {
+                    resultsContainer.innerHTML = `<p class="text-center text-xs text-slate-400 py-6">No books found matching "${query}".</p>`;
+                    return;
+                }
+
+                resultsContainer.innerHTML = '';
+                data.docs.forEach(doc => {
+                    const title = doc.title || 'Untitled';
+                    const author = doc.author_name ? doc.author_name.join(', ') : 'Unknown Author';
+                    const coverId = doc.cover_i;
+                    const coverUrl = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg` : 'https://placehold.co/150x220/e2e8f0/64748b?text=No+Cover';
+
+                    const item = document.createElement('div');
+                    item.className = "flex items-center justify-between p-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition gap-3";
+                    item.innerHTML = `
+                        <div class="flex items-center space-x-3 min-w-0">
+                            <img src="${coverUrl}" alt="${title}" class="w-10 h-14 object-cover rounded shadow-sm border border-slate-200 dark:border-slate-700 flex-shrink-0">
+                            <div class="min-w-0">
+                                <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">${title}</h4>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">${author}</p>
+                            </div>
+                        </div>
+                        <button class="import-book-btn px-3 py-1 bg-brand-600 text-white text-xs font-semibold rounded-lg shadow-sm flex-shrink-0">Add</button>
+                    `;
+
+                    item.querySelector('.import-book-btn').onclick = async () => {
+                        const newBook = {
+                            title,
+                            author,
+                            coverUrl,
+                            currentHolder: currentUser
+                        };
+                        await saveBook(newBook);
+                        document.getElementById('modal-api-search').classList.add('hidden');
+                    };
+
+                    resultsContainer.appendChild(item);
+                });
+            } catch (err) {
+                resultsContainer.innerHTML = `<p class="text-center text-xs text-rose-500 py-6">Failed to query Open Library API.</p>`;
+            }
+        });
+
+        // Custom Manual Add
+        document.getElementById('manual-book-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newBook = {
+                title: document.getElementById('manual-title').value.trim(),
+                author: document.getElementById('manual-author').value.trim(),
+                coverUrl: document.getElementById('manual-cover').value.trim() || 'https://placehold.co/300x450/e2e8f0/64748b?text=No+Cover',
+                currentHolder: document.getElementById('manual-initial-holder').value
+            };
+            await saveBook(newBook);
+            document.getElementById('manual-book-form').reset();
+            document.getElementById('modal-manual-add').classList.add('hidden');
+        });
+
+        // Delete Book
+        document.getElementById('btn-delete-book').onclick = async () => {
+            if (currentSelectedBookId) {
+                await deleteBook(currentSelectedBookId);
+                document.getElementById('modal-book-details').classList.add('hidden');
+            }
+        };
+
+        // Modal Controls
+        document.getElementById('btn-open-members-modal').onclick = () => document.getElementById('modal-members').classList.remove('hidden');
+        document.getElementById('btn-open-api-search').onclick = () => document.getElementById('modal-api-search').classList.remove('hidden');
+        document.getElementById('btn-open-manual-add').onclick = () => document.getElementById('modal-manual-add').classList.remove('hidden');
+
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.onclick = () => btn.closest('.fixed').classList.add('hidden');
+        });
+
+        document.getElementById('library-search').addEventListener('input', renderBooks);
+
+        // Theme Toggle
+        document.getElementById('theme-toggle').onclick = () => {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            localStorage.setItem('gg_theme', html.classList.contains('dark') ? 'dark' : 'light');
+        };
+
+        if (localStorage.getItem('gg_theme') === 'dark') document.documentElement.classList.add('dark');
+
+        // Init App
+        window.addEventListener('DOMContentLoaded', initFirebase);
+    </script>
 </body>
 </html>
