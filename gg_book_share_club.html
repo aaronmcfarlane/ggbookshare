@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GG Book Share Club</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            900: '#0c4a6e',
+                        },
+                        monster: {
+                            teal: '#14b8a6',
+                            purple: '#a855f7',
+                            pink: '#ec4899',
+                            amber: '#f59e0b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .font-monster { font-family: 'Fredoka', cursive, sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 4px; }
+        
+        @keyframes gentle-wiggle {
+            0%, 100% { transform: rotate(-3deg) translateY(0); }
+            50% { transform: rotate(3deg) translateY(-2px); }
+        }
+        .animate-monster {
+            animation: gentle-wiggle 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200">
+
+    <div id="app" class="min-h-full flex flex-col">
+        <!-- Top Navigation Header -->
+        <header class="sticky top-0 z-30 bg-white/85 dark:bg-slate-800/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <!-- Logo & App Name with Cute Book Monster -->
+                    <div class="flex items-center space-x-3 cursor-pointer" onclick="switchMainMode('holdings')">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-500 via-teal-500 to-indigo-600 flex items-center justify-center p-1.5 shadow-md shadow-brand-500/20 animate-monster">
+                            <!-- Cute Book Monster SVG -->
+                            <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-sm">
+                                <rect x="18" y="15" width="64" height="70" rx="14" fill="#a855f7" />
+                                <rect x="22" y="20" width="56" height="60" rx="8" fill="#f8fafc" />
+                                <rect x="18" y="15" width="8" height="70" rx="4" fill="#9333ea" opacity="0.6" />
+                                <circle cx="38" cy="42" r="10" fill="#ffffff" />
+                                <circle cx="62" cy="42" r="10" fill="#ffffff" />
+                                <circle cx="40" cy="43" r="5" fill="#0f172a" />
+                                <circle cx="64" cy="43" r="5" fill="#0f172a" />
+                                <circle cx="42" cy="40" r="2" fill="#ffffff" />
+                                <circle cx="66" cy="40" r="2" fill="#ffffff" />
+                                <path d="M 36 58 Q 50 72 64 58" fill="#0f172a" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+                                <polygon points="44,59 48,59 46,64" fill="#ffffff" />
+                                <polygon points="52,59 56,59 54,64" fill="#ffffff" />
+                                <circle cx="30" cy="52" r="4" fill="#f43f5e" opacity="0.4" />
+                                <circle cx="70" cy="52" r="4" fill="#f43f5e" opacity="0.4" />
+                                <path d="M 78 45 Q 88 50 82 58" stroke="#ec4899" stroke-width="4" stroke-linecap="round" fill="none" />
+                                <path d="M 22 45 Q 12 50 18 58" stroke="#ec4899" stroke-width="4" stroke-linecap="round" fill="none" />
+                            </svg>
+                        </div>
+                        <span class="text-xl font-extrabold font-monster tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-brand-600 via-teal-600 to-purple-600 dark:from-brand-400 dark:via-teal-300 dark:to-purple-400">
+                            GG Book Share Club
+                        </span>
+                    </div>
+
+                    <!-- User Identity & Controls -->
+                    <div class="flex items-center space-x-2 sm:space-x-3">
+                        <div class="flex items-center bg-slate-100 dark:bg-slate-700/60 rounded-xl px-2.5 py-1 border border-slate-200 dark:border-slate-600">
+                            <i class="fa-solid fa-face-smile text-brand-600 dark:text-brand-400 mr-2 text-xs"></i>
+                            <span class="text-[11px] font-semibold text-slate-400 mr-1.5 hidden sm:inline">I am:</span>
+                            <select id="user-select-dropdown" class="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer">
+                                <!-- Alphabetically populated -->
+                            </select>
+                        </div>
+
+                        <button id="btn-open-members-modal" class="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-xs font-semibold flex items-center border border-slate-200 dark:border-slate-700" title="Manage People">
+                            <i class="fa-solid fa-users-gear text-purple-500 sm:mr-1.5"></i>
+                            <span class="hidden sm:inline">People</span>
+                        </button>
+
+                        <button id="theme-toggle" class="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                            <i class="fa-solid fa-moon text-base dark:hidden"></i>
+                            <i class="fa-solid fa-sun text-base hidden dark:block"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col space-y-5">
+            
+            <!-- Summary Stats Bar -->
+            <div class="grid grid-cols-3 gap-3 bg-white dark:bg-slate-800/60 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+                <div class="space-y-0.5">
+                    <div class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Total Books</div>
+                    <div id="stat-total" class="text-base font-extrabold text-brand-600 dark:text-brand-400 font-monster">0</div>
+                </div>
+                <div class="space-y-0.5 border-x border-slate-100 dark:border-slate-700/60">
+                    <div class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">With Members</div>
+                    <div id="stat-loaned" class="text-base font-extrabold text-purple-600 dark:text-purple-400 font-monster">0</div>
+                </div>
+                <div class="space-y-0.5">
+                    <div class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Members</div>
+                    <div id="stat-members" class="text-base font-extrabold text-teal-600 dark:text-teal-400 font-monster">0</div>
+                </div>
+            </div>
+
+            <!-- Primary Mode Switcher (Individual Holdings vs Full Library) -->
+            <div class="flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700 pb-3">
+                <div class="flex items-center p-1 bg-slate-200/70 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+                    <button id="mode-btn-holdings" onclick="switchMainMode('holdings')" class="px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-300 shadow-sm">
+                        <i class="fa-solid fa-user-shelf"></i>
+                        <span>Individual Holdings</span>
+                    </button>
+                    <button id="mode-btn-library" onclick="switchMainMode('library')" class="px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200">
+                        <i class="fa-solid fa-books"></i>
+                        <span>Full Book Library</span>
+                    </button>
+                </div>
+
+                <!-- Global Action Buttons -->
+                <div class="flex items-center space-x-2">
+                    <button id="btn-open-api-search" class="inline-flex items-center justify-center px-3 py-1.5 bg-gradient-to-r from-brand-600 to-teal-600 hover:from-brand-700 hover:to-teal-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                        <i class="fa-solid fa-cloud-arrow-down mr-1.5"></i> Import Book
+                    </button>
+                    <button id="btn-open-manual-add" class="inline-flex items-center justify-center px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm transition">
+                        <i class="fa-solid fa-plus mr-1 text-brand-600 dark:text-brand-400"></i> Custom
+                    </button>
+                </div>
+            </div>
+
+            <!-- SECTION A: INDIVIDUAL HOLDINGS VIEW -->
+            <div id="section-holdings" class="space-y-4">
+                <!-- Alphabetical Member Selector Bar -->
+                <div class="flex items-center space-x-2 overflow-x-auto custom-scrollbar pb-2" id="member-pills-bar">
+                    <!-- Populated dynamically alphabetically -->
+                </div>
+
+                <!-- Selected Member Hero Header -->
+                <div class="bg-gradient-to-r from-brand-500/10 via-purple-500/10 to-teal-500/10 border border-brand-500/20 dark:border-brand-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div class="flex items-center space-x-3">
+                        <div id="member-hero-avatar" class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-500 to-purple-600 text-white font-bold font-monster text-lg flex items-center justify-center shadow-sm">
+                            A
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">Personal Shelf</span>
+                                <span id="hero-my-badge" class="hidden px-2 py-0.2 text-[9px] font-extrabold uppercase rounded-full bg-teal-500 text-white">This is You</span>
+                            </div>
+                            <h2 id="member-hero-name" class="text-xl font-bold font-monster text-slate-800 dark:text-slate-100"></h2>
+                        </div>
+                    </div>
+                    <div class="text-right sm:text-left flex items-center space-x-2">
+                        <span class="text-xs text-slate-500 dark:text-slate-400">Currently holding:</span>
+                        <span id="member-hero-count" class="px-2.5 py-1 bg-white dark:bg-slate-800 font-extrabold text-sm rounded-xl text-brand-600 dark:text-brand-400 border border-slate-200 dark:border-slate-700 shadow-sm font-monster">0 books</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION B: FULL LIBRARY VIEW -->
+            <div id="section-library" class="space-y-4 hidden">
+                <div class="bg-purple-900/10 border border-purple-500/20 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center text-lg shadow-sm">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold font-monster text-slate-800 dark:text-slate-100">Full Club Repository</h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Browse all books registered in the GG Book Share Club</p>
+                        </div>
+                    </div>
+
+                    <!-- Library Filter Tabs & Search Input -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                        <div class="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700 text-xs font-semibold">
+                            <button id="filter-all" onclick="setLibraryFilter('all')" class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-300 shadow-sm">All</button>
+                            <button id="filter-available" onclick="setLibraryFilter('available')" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">Available</button>
+                            <button id="filter-loaned" onclick="setLibraryFilter('loaned')" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">On Loan</button>
+                        </div>
+
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" id="library-search" placeholder="Search title/author..." class="w-full sm:w-48 pl-8 pr-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none text-xs">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Books Grid -->
+            <div id="books-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                <!-- Dynamic cards -->
+            </div>
+
+            <!-- Empty State Display -->
+            <div id="empty-state" class="hidden flex-1 flex flex-col items-center justify-center py-12 text-center">
+                <div class="w-20 h-20 mb-3 animate-monster">
+                    <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
+                        <rect x="18" y="15" width="64" height="70" rx="14" fill="#a855f7" />
+                        <rect x="22" y="20" width="56" height="60" rx="8" fill="#f8fafc" />
+                        <rect x="18" y="15" width="8" height="70" rx="4" fill="#9333ea" opacity="0.6" />
+                        <circle cx="38" cy="42" r="9" fill="#ffffff" />
+                        <circle cx="62" cy="42" r="9" fill="#ffffff" />
+                        <circle cx="38" cy="42" r="4" fill="#0f172a" />
+                        <circle cx="62" cy="42" r="4" fill="#0f172a" />
+                        <path d="M 40 60 Q 50 52 60 60" fill="none" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+                        <circle cx="30" cy="52" r="4" fill="#f43f5e" opacity="0.4" />
+                        <circle cx="70" cy="52" r="4" fill="#f43f5e" opacity="0.4" />
+                    </svg>
+                </div>
+                <h3 id="empty-state-title" class="text-base font-bold font-monster text-slate-700 dark:text-slate-200">No books found!</h3>
+                <p id="empty-state-desc" class="text-xs text-slate-500 dark:text-slate-400 max-w-xs mt-1">The book monster is waiting for stories.</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL 1: Manage People (Add / Remove Members) -->
+    <div id="modal-members" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-base font-bold font-monster text-slate-800 dark:text-slate-100 flex items-center">
+                    <i class="fa-solid fa-users text-purple-500 mr-2"></i> Club Members (Alphabetical)
+                </h3>
+                <button class="close-modal text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <form id="add-member-form" class="flex gap-2">
+                <input type="text" id="new-member-name" required placeholder="Add new member name..." class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-xs shadow transition">Add Person</button>
+            </form>
+
+            <div class="border-t border-slate-100 dark:border-slate-700 pt-3">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Members List</label>
+                <div id="members-list-container" class="space-y-1.5 max-h-52 overflow-y-auto custom-scrollbar pr-1">
+                    <!-- Alphabetically populated -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Open Library Search & Import -->
+    <div id="modal-api-search" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                <h3 class="text-base font-bold font-monster text-slate-800 dark:text-slate-100 flex items-center">
+                    <i class="fa-solid fa-cloud-arrow-down text-brand-600 mr-2"></i> Search Open Library
+                </h3>
+                <button class="close-modal text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div class="p-4 space-y-3">
+                <form id="open-library-form" class="flex gap-2">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="api-search-input" placeholder="Search title, author, or ISBN..." class="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none text-xs">
+                    </div>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-xs transition">Search</button>
+                </form>
+            </div>
+
+            <div id="api-results-container" class="flex-1 overflow-y-auto custom-scrollbar p-4 pt-0 space-y-2 divide-y divide-slate-100 dark:divide-slate-700/50">
+                <div class="text-center py-10 text-slate-400">
+                    <p class="text-xs">Type a title or author above to import books.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Custom Book Add -->
+    <div id="modal-manual-add" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
+                <h3 class="text-base font-bold font-monster text-slate-800 dark:text-slate-100">Add Custom Book</h3>
+                <button class="close-modal text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="manual-book-form" class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Title *</label>
+                    <input type="text" id="manual-title" required class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Author *</label>
+                    <input type="text" id="manual-author" required class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cover Image URL (Optional)</label>
+                    <input type="url" id="manual-cover" placeholder="https://..." class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Who currently has this book?</label>
+                    <select id="manual-initial-holder" class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" class="close-modal px-3 py-1.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs">Cancel</button>
+                    <button type="submit" class="px-4 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold shadow">Add Book</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Book Details & Simple Pass Screen -->
+    <div id="modal-book-details" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                <span class="text-xs font-bold font-monster text-slate-600 dark:text-slate-300">Book Options</span>
+                <div class="flex items-center space-x-2">
+                    <button id="btn-delete-book" class="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg text-xs" title="Remove Book">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                    <button class="close-modal text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+            </div>
+
+            <div class="p-5 space-y-5">
+                <div class="flex space-x-4">
+                    <img id="detail-cover" src="" alt="Book Cover" class="w-24 h-36 object-cover rounded-xl shadow border border-slate-200 dark:border-slate-700 flex-shrink-0">
+                    <div class="space-y-2">
+                        <h2 id="detail-title" class="text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight"></h2>
+                        <p id="detail-author" class="text-xs font-medium text-slate-500 dark:text-slate-400"></p>
+                        
+                        <div class="pt-2">
+                            <span class="text-[10px] uppercase font-bold text-slate-400">Currently held by:</span>
+                            <div id="detail-current-holder" class="text-sm font-bold text-brand-600 dark:text-brand-400"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pass Book Form -->
+                <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200/80 dark:border-slate-700 space-y-3">
+                    <h4 class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center">
+                        <i class="fa-solid fa-arrow-right-arrow-left text-brand-600 mr-2"></i> Pass Book
+                    </h4>
+                    <form id="transfer-form" class="space-y-3">
+                        <div>
+                            <label class="block text-xs text-slate-500 mb-1">Choose member recipient</label>
+                            <select id="transfer-recipient-select" required class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                <!-- Dynamic member list -->
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold shadow transition">
+                            Confirm Pass
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gg-book-share-club';
+        let db = null;
+        let auth = null;
+        
+        let booksData = [];
+        // Requirement 1: Alphabetically sorted default members list
+        let membersData = ['Andrea', 'Cheryl', 'Courtney', 'Jen P', 'Kim B', 'Roxana', 'Sarah P', 'Stephanie']; 
+        let currentUser = localStorage.getItem('gg_active_user') || 'Andrea';
+        
+        let currentMainMode = 'holdings'; // 'holdings' | 'library'
+        let selectedMember = 'Andrea';
+        let libraryFilter = 'all'; // 'all' | 'available' | 'loaned'
+        let currentSelectedBookId = null;
+
+        async function initFirebase() {
+            try {
+                const firebaseConfig = typeof __firebase_config !== 'undefined' 
+                    ? JSON.parse(__firebase_config)
+                    : {
+                        apiKey: "AIzaSyDemoKeyFallback1234567890",
+                        authDomain: "gg-books-demo.firebaseapp.com",
+                        projectId: "gg-books-demo",
+                        storageBucket: "gg-books-demo.appspot.com",
+                        messagingSenderId: "1234567890",
+                        appId: "1:1234567890:web:demo"
+                    };
+
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                setupRealtimeListeners();
+            } catch (err) {
+                console.warn("Firebase fallback to local cache:", err);
+                initLocalFallback();
+            }
+        }
+
+        function getCollectionRef(name) {
+            return collection(db, 'artifacts', appId, 'public', 'data', name);
+        }
+
+        function sortMembersAlphabetically() {
+            membersData.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+        }
+
+        function setupRealtimeListeners() {
+            if (!db) return;
+
+            onSnapshot(getCollectionRef('books'), (snapshot) => {
+                booksData = [];
+                snapshot.forEach((docSnap) => {
+                    booksData.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderApp();
+            }, (err) => console.error(err));
+
+            onSnapshot(getCollectionRef('members'), (snapshot) => {
+                const fetchedMembers = [];
+                snapshot.forEach((docSnap) => {
+                    fetchedMembers.push(docSnap.data().name);
+                });
+                if (fetchedMembers.length > 0) {
+                    membersData = fetchedMembers;
+                    sortMembersAlphabetically();
+                }
+                renderApp();
+            }, (err) => console.error(err));
+        }
+
+        function initLocalFallback() {
+            const storedBooks = localStorage.getItem('gg_books');
+            const storedMembers = localStorage.getItem('gg_members');
+            if (storedBooks) booksData = JSON.parse(storedBooks);
+            if (storedMembers) {
+                membersData = JSON.parse(storedMembers);
+                sortMembersAlphabetically();
+            }
+            renderApp();
+        }
+
+        function saveLocalFallback() {
+            localStorage.setItem('gg_books', JSON.stringify(booksData));
+            localStorage.setItem('gg_members', JSON.stringify(membersData));
+        }
+
+        async function saveBook(bookObj) {
+            if (db && auth.currentUser) {
+                try {
+                    if (!bookObj.id) {
+                        const newRef = doc(getCollectionRef('books'));
+                        bookObj.id = newRef.id;
+                    }
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'books', bookObj.id);
+                    await setDoc(docRef, bookObj, { merge: true });
+                    return;
+                } catch (e) { console.error(e); }
+            }
+            if (!bookObj.id) bookObj.id = 'book-' + Date.now();
+            const idx = booksData.findIndex(b => b.id === bookObj.id);
+            if (idx >= 0) booksData[idx] = bookObj;
+            else booksData.unshift(bookObj);
+            saveLocalFallback();
+            renderApp();
+        }
+
+        async function deleteBook(bookId) {
+            if (db && auth.currentUser) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'books', bookId));
+                    return;
+                } catch (e) { console.error(e); }
+            }
+            booksData = booksData.filter(b => b.id !== bookId);
+            saveLocalFallback();
+            renderApp();
+        }
+
+        async function saveMembersList() {
+            sortMembersAlphabetically();
+            if (db && auth.currentUser) {
+                try {
+                    for (const m of membersData) {
+                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', m), { name: m });
+                    }
+                } catch(e) { console.error(e); }
+            }
+            saveLocalFallback();
+        }
+
+        async function removeMemberFromDb(memberName) {
+            if (db && auth.currentUser) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', memberName));
+                } catch(e) { console.error(e); }
+            }
+            membersData = membersData.filter(m => m !== memberName);
+            sortMembersAlphabetically();
+            saveLocalFallback();
+            renderApp();
+        }
+
+        // Global Mode Switcher
+        window.switchMainMode = function(mode) {
+            currentMainMode = mode;
+            renderApp();
+        };
+
+        window.setLibraryFilter = function(filter) {
+            libraryFilter = filter;
+            renderApp();
+        };
+
+        function renderApp() {
+            sortMembersAlphabetically();
+            
+            if (!membersData.includes(currentUser) && membersData.length > 0) {
+                currentUser = membersData[0];
+            }
+            if (!membersData.includes(selectedMember) && membersData.length > 0) {
+                selectedMember = membersData[0];
+            }
+
+            renderStats();
+            renderUserDropdown();
+            renderModeControls();
+            renderHoldingsMemberPills();
+            renderMemberListModal();
+            renderBooks();
+        }
+
+        function renderStats() {
+            document.getElementById('stat-total').textContent = booksData.length;
+            const holdingCount = booksData.filter(b => !!b.currentHolder).length;
+            document.getElementById('stat-loaned').textContent = holdingCount;
+            document.getElementById('stat-members').textContent = membersData.length;
+        }
+
+        function renderUserDropdown() {
+            const dropdown = document.getElementById('user-select-dropdown');
+            dropdown.innerHTML = '';
+
+            membersData.forEach(member => {
+                const opt = document.createElement('option');
+                opt.value = member;
+                opt.textContent = member;
+                if (member === currentUser) opt.selected = true;
+                dropdown.appendChild(opt);
+            });
+        }
+
+        function renderModeControls() {
+            const btnHoldings = document.getElementById('mode-btn-holdings');
+            const btnLibrary = document.getElementById('mode-btn-library');
+            const secHoldings = document.getElementById('section-holdings');
+            const secLibrary = document.getElementById('section-library');
+
+            if (currentMainMode === 'holdings') {
+                btnHoldings.className = "px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-300 shadow-sm";
+                btnLibrary.className = "px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200";
+                secHoldings.classList.remove('hidden');
+                secLibrary.classList.add('hidden');
+            } else {
+                btnLibrary.className = "px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-300 shadow-sm";
+                btnHoldings.className = "px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200";
+                secLibrary.classList.remove('hidden');
+                secHoldings.classList.add('hidden');
+            }
+
+            // Update Library Filter Tabs UI
+            ['all', 'available', 'loaned'].forEach(f => {
+                const btn = document.getElementById(`filter-${f}`);
+                if (btn) {
+                    if (libraryFilter === f) {
+                        btn.className = "px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-300 shadow-sm";
+                    } else {
+                        btn.className = "px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200";
+                    }
+                }
+            });
+        }
+
+        function renderHoldingsMemberPills() {
+            const bar = document.getElementById('member-pills-bar');
+            bar.innerHTML = '';
+
+            membersData.forEach(member => {
+                const count = booksData.filter(b => b.currentHolder === member).length;
+                const isSelected = selectedMember === member;
+                const isMe = currentUser === member;
+
+                const btn = document.createElement('button');
+                btn.className = `px-3 py-1.5 text-xs font-semibold rounded-xl whitespace-nowrap transition flex items-center space-x-1.5 ${
+                    isSelected 
+                        ? 'bg-brand-600 text-white shadow-sm font-bold' 
+                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
+                }`;
+
+                btn.innerHTML = `
+                    <span>${member}</span>
+                    ${isMe ? '<i class="fa-solid fa-user text-[10px] opacity-75"></i>' : ''}
+                    <span class="px-1.5 py-0.2 text-[10px] rounded-full ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}">${count}</span>
+                `;
+                btn.onclick = () => {
+                    selectedMember = member;
+                    renderApp();
+                };
+                bar.appendChild(btn);
+            });
+
+            // Update Hero Banner
+            document.getElementById('member-hero-name').textContent = selectedMember;
+            document.getElementById('member-hero-avatar').textContent = selectedMember.charAt(0).toUpperCase();
+            
+            const count = booksData.filter(b => b.currentHolder === selectedMember).length;
+            document.getElementById('member-hero-count').textContent = `${count} ${count === 1 ? 'book' : 'books'}`;
+
+            const badgeMe = document.getElementById('hero-my-badge');
+            if (selectedMember === currentUser) badgeMe.classList.remove('hidden');
+            else badgeMe.classList.add('hidden');
+        }
+
+        function renderBooks() {
+            const container = document.getElementById('books-container');
+            const emptyState = document.getElementById('empty-state');
+            container.innerHTML = '';
+
+            let filtered = [];
+
+            if (currentMainMode === 'holdings') {
+                filtered = booksData.filter(b => b.currentHolder === selectedMember);
+            } else {
+                const query = document.getElementById('library-search').value.toLowerCase().trim();
+                filtered = booksData.filter(b => {
+                    const matchesQuery = !query || b.title?.toLowerCase().includes(query) || b.author?.toLowerCase().includes(query);
+                    if (!matchesQuery) return false;
+
+                    if (libraryFilter === 'available') return !b.currentHolder;
+                    if (libraryFilter === 'loaned') return !!b.currentHolder;
+                    return true;
+                });
+            }
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                container.classList.add('hidden');
+                
+                if (currentMainMode === 'holdings') {
+                    document.getElementById('empty-state-title').textContent = `${selectedMember} currently has no books`;
+                    document.getElementById('empty-state-desc').textContent = `Pass a book to ${selectedMember} or import a new book.`;
+                } else {
+                    document.getElementById('empty-state-title').textContent = 'No library books match filter';
+                    document.getElementById('empty-state-desc').textContent = 'Try another search query or clear filters.';
+                }
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            filtered.forEach(book => {
+                const cover = book.coverUrl || 'https://placehold.co/300x450/e2e8f0/64748b?text=No+Cover';
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition duration-200 flex flex-col overflow-hidden cursor-pointer group";
+                card.onclick = () => openBookDetailsModal(book.id);
+
+                const holderBadge = book.currentHolder 
+                    ? `<span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-purple-900/80 text-white backdrop-blur-md truncate block text-center">With: ${book.currentHolder}</span>`
+                    : `<span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-teal-600/90 text-white backdrop-blur-md truncate block text-center">Available</span>`;
+
+                card.innerHTML = `
+                    <div class="relative h-48 bg-slate-100 dark:bg-slate-900 overflow-hidden flex items-center justify-center">
+                        <img src="${cover}" alt="${book.title}" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://placehold.co/300x450/e2e8f0/64748b?text=No+Cover'">
+                        <div class="absolute bottom-2 left-2 right-2">
+                            ${holderBadge}
+                        </div>
+                    </div>
+                    <div class="p-3.5 flex-1 flex flex-col justify-between space-y-2">
+                        <div>
+                            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm line-clamp-1 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition">${book.title}</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">${book.author}</p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderMemberListModal() {
+            const container = document.getElementById('members-list-container');
+            container.innerHTML = '';
+
+            membersData.forEach(member => {
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700/60 text-xs";
+                row.innerHTML = `
+                    <span class="font-medium text-slate-700 dark:text-slate-200">${member}</span>
+                    <button class="remove-member-btn text-rose-500 hover:text-rose-700 p-1" title="Remove Member">
+                        <i class="fa-solid fa-trash text-xs"></i>
+                    </button>
+                `;
+
+                row.querySelector('.remove-member-btn').onclick = () => {
+                    if (membersData.length <= 1) {
+                        alert("You must keep at least one member.");
+                        return;
+                    }
+                    removeMemberFromDb(member);
+                };
+
+                container.appendChild(row);
+            });
+
+            const manualHolderSelect = document.getElementById('manual-initial-holder');
+            manualHolderSelect.innerHTML = '';
+            membersData.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = m;
+                if (m === currentUser) opt.selected = true;
+                manualHolderSelect.appendChild(opt);
+            });
+        }
+
+        function openBookDetailsModal(bookId) {
+            currentSelectedBookId = bookId;
+            const book = booksData.find(b => b.id === bookId);
+            if (!book) return;
+
+            document.getElementById('detail-title').textContent = book.title;
+            document.getElementById('detail-author').textContent = `By ${book.author}`;
+            document.getElementById('detail-current-holder').textContent = book.currentHolder || 'Unassigned';
+            document.getElementById('detail-cover').src = book.coverUrl || 'https://placehold.co/300x450/e2e8f0/64748b?text=No+Cover';
+
+            const recipientSelect = document.getElementById('transfer-recipient-select');
+            recipientSelect.innerHTML = '';
+            membersData.forEach(member => {
+                const opt = document.createElement('option');
+                opt.value = member;
+                opt.textContent = member;
+                if (member !== book.currentHolder) opt.selected = true;
+                recipientSelect.appendChild(opt);
+            });
+
+            document.getElementById('modal-book-details').classList.remove('hidden');
+        }
+
+        // Event Listeners
+        document.getElementById('user-select-dropdown').addEventListener('change', (e) => {
+            currentUser = e.target.value;
+            localStorage.setItem('gg_active_user', currentUser);
+            renderApp();
+        });
+
+        document.getElementById('add-member-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newName = document.getElementById('new-member-name').value.trim();
+            if (newName && !membersData.includes(newName)) {
+                membersData.push(newName);
+                saveMembersList();
+                document.getElementById('new-member-name').value = '';
+                renderApp();
+            }
+        });
+
+        document.getElementById('transfer-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentSelectedBookId) return;
+
+            const targetRecipient = document.getElementById('transfer-recipient-select').value;
+            const book = booksData.find(b => b.id === currentSelectedBookId);
+            if (book) {
+                book.currentHolder = targetRecipient;
+                await saveBook(book);
+                document.getElementById('modal-book-details').classList.add('hidden');
+            }
+        });
+
+        // Open Library API Search
+        document.getElementById('open-library-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = document.getElementById('api-search-input').value.trim();
+            if (!query) return;
+
+            const resultsContainer = document.getElementById('api-results-container');
+            resultsContainer.innerHTML = `
+                <div class="text-center py-8 text-slate-400">
+                    <i class="fa-solid fa-spinner fa-spin text-2xl text-brand-600 mb-2"></i>
+                    <p class="text-xs">Searching Open Library...</p>
+                </div>
+            `;
+
+            try {
+                const res = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=8`);
+                const data = await res.json();
+
+                if (!data.docs || data.docs.length === 0) {
+                    resultsContainer.innerHTML = `<p class="text-center text-xs text-slate-400 py-6">No books found matching "${query}".</p>`;
+                    return;
+                }
+
+                resultsContainer.innerHTML = '';
+                data.docs.forEach(doc => {
+                    const title = doc.title || 'Untitled';
+                    const author = doc.author_name ? doc.author_name.join(', ') : 'Unknown Author';
+                    const coverId = doc.cover_i;
+                    const coverUrl = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg` : 'https://placehold.co/150x220/e2e8f0/64748b?text=No+Cover';
+
+                    const item = document.createElement('div');
+                    item.className = "flex items-center justify-between p-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition gap-3";
+                    item.innerHTML = `
+                        <div class="flex items-center space-x-3 min-w-0">
+                            <img src="${coverUrl}" alt="${title}" class="w-10 h-14 object-cover rounded shadow-sm border border-slate-200 dark:border-slate-700 flex-shrink-0">
+                            <div class="min-w-0">
+                                <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">${title}</h4>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">${author}</p>
+                            </div>
+                        </div>
+                        <button class="import-book-btn px-3 py-1 bg-brand-600 text-white text-xs font-semibold rounded-lg shadow-sm flex-shrink-0">Add</button>
+                    `;
+
+                    item.querySelector('.import-book-btn').onclick = async () => {
+                        const newBook = {
+                            title,
+                            author,
+                            coverUrl,
+                            currentHolder: currentUser
+                        };
+                        await saveBook(newBook);
+                        document.getElementById('modal-api-search').classList.add('hidden');
+                    };
+
+                    resultsContainer.appendChild(item);
+                });
+            } catch (err) {
+                resultsContainer.innerHTML = `<p class="text-center text-xs text-rose-500 py-6">Failed to query Open Library API.</p>`;
+            }
+        });
+
+        // Custom Manual Add
+        document.getElementById('manual-book-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newBook = {
+                title: document.getElementById('manual-title').value.trim(),
+                author: document.getElementById('manual-author').value.trim(),
+                coverUrl: document.getElementById('manual-cover').value.trim() || 'https://placehold.co/300x450/e2e8f0/64748b?text=No+Cover',
+                currentHolder: document.getElementById('manual-initial-holder').value
+            };
+            await saveBook(newBook);
+            document.getElementById('manual-book-form').reset();
+            document.getElementById('modal-manual-add').classList.add('hidden');
+        });
+
+        // Delete Book
+        document.getElementById('btn-delete-book').onclick = async () => {
+            if (currentSelectedBookId) {
+                await deleteBook(currentSelectedBookId);
+                document.getElementById('modal-book-details').classList.add('hidden');
+            }
+        };
+
+        // Modal Controls
+        document.getElementById('btn-open-members-modal').onclick = () => document.getElementById('modal-members').classList.remove('hidden');
+        document.getElementById('btn-open-api-search').onclick = () => document.getElementById('modal-api-search').classList.remove('hidden');
+        document.getElementById('btn-open-manual-add').onclick = () => document.getElementById('modal-manual-add').classList.remove('hidden');
+
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.onclick = () => btn.closest('.fixed').classList.add('hidden');
+        });
+
+        document.getElementById('library-search').addEventListener('input', renderBooks);
+
+        // Theme Toggle
+        document.getElementById('theme-toggle').onclick = () => {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            localStorage.setItem('gg_theme', html.classList.contains('dark') ? 'dark' : 'light');
+        };
+
+        if (localStorage.getItem('gg_theme') === 'dark') document.documentElement.classList.add('dark');
+
+        // Init App
+        window.addEventListener('DOMContentLoaded', initFirebase);
+    </script>
+</body>
+</html>
